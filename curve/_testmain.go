@@ -1,6 +1,6 @@
 package main
 
-import "draw2d.googlecode.com/hg/draw2d/curve"
+import "code.google.com/p/draw2d.hg/curve"
 import "testing"
 import __os__ "os"
 import __regexp__ "regexp"
