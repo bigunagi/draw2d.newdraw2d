@@ -3,7 +3,7 @@ rm -f _test/draw2d.googlecode.com/hg/draw2d/raster.a
 rm -f _test/draw2d.googlecode.com/hg/draw2d/raster.a
 gopack grc _test/draw2d.googlecode.com/hg/draw2d/raster.a _gotest_.8 
 PASS
-raster.BenchmarkFreetype	    1000	   1547154 ns/op
-raster.BenchmarkFreetypeNonZeroWinding	    2000	   1224622 ns/op
-raster.BenchmarkRasterizerNonZeroWinding	    5000	    583658 ns/op
-raster.BenchmarkRasterizer	    5000	    451645 ns/op
+raster.BenchmarkFreetype	    1000	   1650165 ns/op
+raster.BenchmarkFreetypeNonZeroWinding	    2000	   1238123 ns/op
+raster.BenchmarkRasterizerNonZeroWinding	    5000	    577457 ns/op
+raster.BenchmarkRasterizer	    5000	    447244 ns/op
