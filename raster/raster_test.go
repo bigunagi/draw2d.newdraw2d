@@ -1,17 +1,18 @@
 package raster
 
 import (
-	"testing"
-	"log"
-	"image"
-	"os"
 	"bufio"
-	"image/png"
 	"code.google.com/p/draw2d.hg/curve"
-	"image/draw"
+	"freetype-go.googlecode.com/hg/freetype/raster"
+	"image"
+	"image/color"
+	"image/png"
+	"log"
+	"os"
+	"testing"
 )
 
-var flattening_threshold float64 = 0.25
+var flattening_threshold float64 = 0.5
 
 func savepng(filePath string, m image.Image) {
 	f, err := os.Create(filePath)
@@ -49,47 +50,153 @@ func (p *Path) LineTo(x, y float64) {
 	p.points[len(p.points)-1] = y
 }
 
-func TestLine(t *testing.T) {
-	mask := image.NewAlpha(200, 200)
+func TestFreetype(t *testing.T) {
 	var p Path
 	p.LineTo(10, 190)
 	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
-	DrawPolyline(mask, poly...)
+	color := color.RGBA{0, 0, 0, 0xff}
 
-	img := image.NewRGBA(200, 200)
-	draw.DrawMask(img, mask.Bounds(), image.NewColorImage(image.RGBAColor{0, 0, 0, 0xff}), image.ZP, mask, image.ZP, draw.Src)
+	img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	rasterizer := raster.NewRasterizer(200, 200)
+	rasterizer.UseNonZeroWinding = false
+	rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
+	for j := 0; j < len(poly); j = j + 2 {
+		rasterizer.Add1(raster.Point{raster.Fix32(poly[j] * 256), raster.Fix32(poly[j+1] * 256)})
+	}
+	painter := raster.NewRGBAPainter(img)
+	painter.SetColor(color)
+	rasterizer.Rasterize(painter)
 
+	savepng("_testFreetype.png", img)
+}
+
+func TestFreetypeNonZeroWinding(t *testing.T) {
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	color := color.RGBA{0, 0, 0, 0xff}
+
+	img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	rasterizer := raster.NewRasterizer(200, 200)
+	rasterizer.UseNonZeroWinding = true
+	rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
+	for j := 0; j < len(poly); j = j + 2 {
+		rasterizer.Add1(raster.Point{raster.Fix32(poly[j] * 256), raster.Fix32(poly[j+1] * 256)})
+	}
+	painter := raster.NewRGBAPainter(img)
+	painter.SetColor(color)
+	rasterizer.Rasterize(painter)
+
+	savepng("_testFreetypeNonZeroWinding.png", img)
+}
+
+func TestRasterizer(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	color := color.RGBA{0, 0, 0, 0xff}
+	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	r := NewRasterizer8BitsSample(200, 200)
+	//PolylineBresenham(img, image.Black, poly...)
+
+
+	r.RenderEvenOdd(img, &color, &poly, tr)
 	savepng("_testRasterizer.png", img)
 }
 
-func TestLineAA(t *testing.T) {
-	mask := image.NewAlpha(200, 200)
+func TestRasterizerNonZeroWinding(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 200, 200))
 	var p Path
 	p.LineTo(10, 190)
 	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
-	DrawPolylineAA(mask, poly...)
-	img := image.NewRGBA(200, 200)
-	draw.DrawMask(img, mask.Bounds(), image.NewColorImage(image.RGBAColor{0, 0, 0, 0xff}), image.ZP, mask, image.ZP, draw.Over)
-	savepng("_testRasterizerAA.png", img)
+	color := color.RGBA{0, 0, 0, 0xff}
+	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	r := NewRasterizer8BitsSample(200, 200)
+	//PolylineBresenham(img, image.Black, poly...)
+
+
+	r.RenderNonZeroWinding(img, &color, &poly, tr)
+	savepng("_testRasterizerNonZeroWinding.png", img)
 }
 
-/*
-func TestRasterizer(t *testing.T) {
-	mask := image.NewRGBA(200, 200)
+func BenchmarkFreetype(b *testing.B) {
 	var p Path
 	p.LineTo(10, 190)
 	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
-	color := image.NRGBAColor{0, 0, 0, 0xff}
-	var r Rasterizer
-	//PolylineBresenham(mask, image.Black, poly...)
+	color := color.RGBA{0, 0, 0, 0xff}
 
-	r.Fill(poly, color)
-	savepng("_testRasterizer.png", mask)
+	for i := 0; i < b.N; i++ {
+		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+		rasterizer := raster.NewRasterizer(200, 200)
+		rasterizer.UseNonZeroWinding = false
+		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
+		for j := 0; j < len(poly); j = j + 2 {
+			rasterizer.Add1(raster.Point{raster.Fix32(poly[j] * 256), raster.Fix32(poly[j+1] * 256)})
+		}
+		painter := raster.NewRGBAPainter(img)
+		painter.SetColor(color)
+		rasterizer.Rasterize(painter)
+	}
 }
-*/
+func BenchmarkFreetypeNonZeroWinding(b *testing.B) {
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	color := color.RGBA{0, 0, 0, 0xff}
+
+	for i := 0; i < b.N; i++ {
+		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+		rasterizer := raster.NewRasterizer(200, 200)
+		rasterizer.UseNonZeroWinding = true
+		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
+		for j := 0; j < len(poly); j = j + 2 {
+			rasterizer.Add1(raster.Point{raster.Fix32(poly[j] * 256), raster.Fix32(poly[j+1] * 256)})
+		}
+		painter := raster.NewRGBAPainter(img)
+		painter.SetColor(color)
+		rasterizer.Rasterize(painter)
+	}
+}
+
+func BenchmarkRasterizerNonZeroWinding(b *testing.B) {
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	color := color.RGBA{0, 0, 0, 0xff}
+	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	for i := 0; i < b.N; i++ {
+		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+		rasterizer := NewRasterizer8BitsSample(200, 200)
+		rasterizer.RenderNonZeroWinding(img, &color, &poly, tr)
+	}
+}
+
+func BenchmarkRasterizer(b *testing.B) {
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	color := color.RGBA{0, 0, 0, 0xff}
+	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	for i := 0; i < b.N; i++ {
+		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
+		rasterizer := NewRasterizer8BitsSample(200, 200)
+		rasterizer.RenderEvenOdd(img, &color, &poly, tr)
+	}
+}

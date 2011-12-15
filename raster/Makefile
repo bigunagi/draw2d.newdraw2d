@@ -1,10 +1,12 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=code.google.com/p/draw2d.hg/raster
+TARG=draw2d.googlecode.com/hg/draw2d/raster
 GOFILES=\
-	polygon.go \
-	line.go \
-	filler.go \
+	line.go\
+	polygon.go\
+	coverage_table.go\
+	fillerAA.go\
+	fixed_point.go
 	
 
 include $(GOROOT)/src/Make.pkg
