@@ -11,7 +11,7 @@ type Rasterizer struct {
 
 func NewRasterizer(width, height int) *Rasterizer {
 	r := new(Rasterizer)
-	r.img = image.NewAlpha(width, height)
+	r.img = image.NewAlpha(image.Rect(0, 0, width, height))
 	r.table1 = make([]float64, height)
 	r.table2 = make([]float64, height)
 	return r

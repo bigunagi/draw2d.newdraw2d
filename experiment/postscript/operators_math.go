@@ -6,7 +6,7 @@ package postscript
 
 import (
 	"math"
-	"rand"
+	"math/rand"
 )
 // begin Primitive Operator implementation
 
@@ -51,7 +51,7 @@ func sub(interpreter *Interpreter) {
 //num1 abs num2 -> Return absolute value of num1
 func abs(interpreter *Interpreter) {
 	f := interpreter.PopFloat()
-	interpreter.Push(math.Fabs(f))
+	interpreter.Push(math.Abs(f))
 }
 //num1 neg num2 -> Return negative of num1
 func neg(interpreter *Interpreter) {

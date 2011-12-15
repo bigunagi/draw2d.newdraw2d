@@ -1,10 +1,11 @@
 package draw2dgl
 
 import (
-	"draw2d.googlecode.com/hg/draw2d"
-	"freetype-go.googlecode.com/hg/freetype/raster"
+	"code.google.com/p/draw2d/draw2d"
+	"code.google.com/p/freetype-go/freetype/raster"
 	"gl"
 	"image"
+	"image/color"
 	"image/draw"
 	//"log"
 )
@@ -82,7 +83,7 @@ func (p *GLPainter) Flush() {
 }
 
 // SetColor sets the color to paint the spans.
-func (p *GLPainter) SetColor(c image.Color) {
+func (p *GLPainter) SetColor(c color.Color) {
 	r, g, b, a := c.RGBA()
 	if a == 0 {
 		p.cr = 0
@@ -165,7 +166,7 @@ func (gc *GraphicContext) FillString(text string) (cursor float64) {
 	return 0
 }
 
-func (gc *GraphicContext) paint(rasterizer *raster.Rasterizer, color image.Color) {
+func (gc *GraphicContext) paint(rasterizer *raster.Rasterizer, color color.Color) {
 	gc.painter.SetColor(color)
 	rasterizer.Rasterize(gc.painter)
 	rasterizer.Clear()

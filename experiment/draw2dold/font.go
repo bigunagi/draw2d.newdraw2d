@@ -3,8 +3,8 @@
 package draw2d
 
 import (
-	"freetype-go.googlecode.com/hg/freetype"
-	"freetype-go.googlecode.com/hg/freetype/truetype"
+	"code.google.com/p/freetype-go/freetype"
+	"code.google.com/p/freetype-go/freetype/truetype"
 	"io/ioutil"
 	"log"
 	"path"

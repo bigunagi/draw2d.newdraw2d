@@ -77,7 +77,7 @@ func recursiveQuadraticBezierBezier(v VertexConverter, x1, y1, x2, y2, x3, y3 fl
 
 	dx := x3 - x1
 	dy := y3 - y1
-	d := math.Fabs(((x2-x3)*dy - (y2-y3)*dx))
+	d := math.Abs(((x2-x3)*dy - (y2-y3)*dx))
 
 	if d > CurveCollinearityEpsilon {
 		// Regular case
@@ -93,7 +93,7 @@ func recursiveQuadraticBezierBezier(v VertexConverter, x1, y1, x2, y2, x3, y3 fl
 
 			// Angle & Cusp Condition
 			//----------------------
-			da := math.Fabs(math.Atan2(y3-y2, x3-x2) - math.Atan2(y2-y1, x2-x1))
+			da := math.Abs(math.Atan2(y3-y2, x3-x2) - math.Atan2(y2-y1, x2-x1))
 			if da >= math.Pi {
 				da = 2*math.Pi - da
 			}
@@ -166,8 +166,8 @@ func recursiveCubicBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, x4, y4 floa
 	dx := x4 - x1
 	dy := y4 - y1
 
-	d2 := math.Fabs(((x2-x4)*dy - (y2-y4)*dx))
-	d3 := math.Fabs(((x3-x4)*dy - (y3-y4)*dx))
+	d2 := math.Abs(((x2-x4)*dy - (y2-y4)*dx))
+	d3 := math.Abs(((x3-x4)*dy - (y3-y4)*dx))
 
 	switch {
 	case d2 <= CurveCollinearityEpsilon && d3 <= CurveCollinearityEpsilon:
@@ -230,7 +230,7 @@ func recursiveCubicBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, x4, y4 floa
 
 			// Angle Condition
 			//----------------------
-			da1 := math.Fabs(math.Atan2(y4-y3, x4-x3) - math.Atan2(y3-y2, x3-x2))
+			da1 := math.Abs(math.Atan2(y4-y3, x4-x3) - math.Atan2(y3-y2, x3-x2))
 			if da1 >= math.Pi {
 				da1 = 2*math.Pi - da1
 			}
@@ -261,7 +261,7 @@ func recursiveCubicBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, x4, y4 floa
 
 			// Angle Condition
 			//----------------------
-			da1 := math.Fabs(math.Atan2(y3-y2, x3-x2) - math.Atan2(y2-y1, x2-x1))
+			da1 := math.Abs(math.Atan2(y3-y2, x3-x2) - math.Atan2(y2-y1, x2-x1))
 			if da1 >= math.Pi {
 				da1 = 2*math.Pi - da1
 			}
@@ -296,8 +296,8 @@ func recursiveCubicBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, x4, y4 floa
 			// Angle & Cusp Condition
 			//----------------------
 			k := math.Atan2(y3-y2, x3-x2)
-			da1 := math.Fabs(k - math.Atan2(y2-y1, x2-x1))
-			da2 := math.Fabs(math.Atan2(y4-y3, x4-x3) - k)
+			da1 := math.Abs(k - math.Atan2(y2-y1, x2-x1))
+			da2 := math.Abs(math.Atan2(y4-y3, x4-x3) - k)
 			if da1 >= math.Pi {
 				da1 = 2*math.Pi - da1
 			}
