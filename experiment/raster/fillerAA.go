@@ -11,9 +11,11 @@ import (
 const (
 	SUBPIXEL_SHIFT = 3
 	SUBPIXEL_COUNT = 1 << SUBPIXEL_SHIFT
+	SUBPIXEL_FULL_COVERAGE = 0xff
 )
 
 var SUBPIXEL_OFFSETS = SUBPIXEL_OFFSETS_SAMPLE_8_FIXED
+
 
 type SUBPIXEL_DATA uint8
 type NON_ZERO_MASK_DATA_UNIT uint8
@@ -108,7 +110,8 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
 	for p < l {
-		edgeCount := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		edgeCount, bound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		clipRect  = intersect(clipRect, bound)
 		for k := 0; k < edgeCount; k++ {
 			r.addEvenOddEdge(&edges[k])
 		}
@@ -189,10 +192,8 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
 
 	for y = minY; y < maxY; y++ {
 		tp := img.Pix[y*stride:]
-
 		mask = 0
 		for x = minX; x <= maxX; x++ {
-			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
 			mask ^= r.MaskBuffer[y*uint32(r.BufferWidth)+x]
 			// 8bits
 			alpha := uint32(coverageTable[mask])
@@ -202,15 +203,19 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff] + coverageTable[(mask >> 16) & 0xff] + coverageTable[(mask >> 24) & 0xff])
 
 			// alpha is in range of 0 to SUBPIXEL_COUNT
-			invAlpha := SUBPIXEL_COUNT - alpha
-
-			ct1 := *p & 0xff00ff * invAlpha
-			ct2 := *p >> 8 & 0xff00ff * invAlpha
-
-			ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
-			ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
-
-			*p = ct1 + ct2
+			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
+			if alpha == SUBPIXEL_FULL_COVERAGE {
+				*p = *pixColor
+			} else if alpha != 0 {
+				invAlpha := SUBPIXEL_COUNT - alpha				
+				ct1 := *p & 0xff00ff * invAlpha
+				ct2 := *p >> 8 & 0xff00ff * invAlpha
+	
+				ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
+				ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
+	
+				*p = ct1 + ct2
+			}
 		}
 	}
 }
@@ -244,7 +249,8 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
 	for p < l {
-		edgeCount := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		edgeCount, bound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		clipRect  = intersect(clipRect, bound)
 		for k := 0; k < edgeCount; k++ {
 			r.addNonZeroEdge(&edges[k])
 		}
