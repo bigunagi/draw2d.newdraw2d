@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=code.google.com/p/draw2d.hg/curve
+TARG=code.google.com/p/draw2d/curve
 GOFILES=\
 	cubic_float64.go\
 	quad_float64.go\
