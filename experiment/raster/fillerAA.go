@@ -67,6 +67,22 @@ func clip(x, y, width, height, scale int) [4]float64 {
 	return clipBound
 }
 
+func union(r1, r2 [4]float64) [4]float64 {
+	if r1[0] > r2[0] {
+		r1[0] = r2[0]
+	}
+	if r1[2] < r2[2] {
+		r1[2] = r2[2]
+	}
+	if r1[1] > r2[1] {
+		r1[1] = r2[1]
+	}
+	if r1[3] < r2[3] {
+		r1[3] = r2[3]
+	}
+	return r1
+}
+
 func intersect(r1, r2 [4]float64) [4]float64 {
 	if r1[0] < r2[0] {
 		r1[0] = r2[0]
@@ -74,18 +90,11 @@ func intersect(r1, r2 [4]float64) [4]float64 {
 	if r1[2] > r2[2] {
 		r1[2] = r2[2]
 	}
-	if r1[0] > r1[2] {
-		r1[0] = r1[2]
-	}
-
 	if r1[1] < r2[1] {
 		r1[1] = r2[1]
 	}
 	if r1[3] > r2[3] {
 		r1[3] = r2[3]
-	}
-	if r1[1] > r1[3] {
-		r1[1] = r1[3]
 	}
 	return r1
 }
@@ -109,15 +118,20 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 	p := 0
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
+	var bound [4]float64
+	bound[0] = (*polygon)[0]
+	bound[1] = (*polygon)[1]
+	bound[2] = (*polygon)[0]
+	bound[3] = (*polygon)[1]
 	for p < l {
-		edgeCount, bound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
-		clipRect  = intersect(clipRect, bound)
+		edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		bound = union(bound, subbound)
 		for k := 0; k < edgeCount; k++ {
 			r.addEvenOddEdge(&edges[k])
 		}
 		p += 16
 	}
-
+	clipRect  = intersect(clipRect, bound)
 	r.fillEvenOdd(img, color, clipRect)
 }
 
@@ -248,15 +262,21 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	p := 0
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
+	var bound [4]float64
+	bound[0] = (*polygon)[0]
+	bound[1] = (*polygon)[1]
+	bound[2] = (*polygon)[0]
+	bound[3] = (*polygon)[1]
 	for p < l {
-		edgeCount, bound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
-		clipRect  = intersect(clipRect, bound)
+		edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+		bound = union(bound, subbound)
+		
 		for k := 0; k < edgeCount; k++ {
 			r.addNonZeroEdge(&edges[k])
 		}
 		p += 16
 	}
-
+	clipRect = intersect(clipRect, bound)
 	r.fillNonZero(img, color, clipRect)
 }
 
