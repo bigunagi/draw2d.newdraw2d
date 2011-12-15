@@ -10,7 +10,7 @@ import (
 	"io"
 	"os"
 	"unicode"
-	"utf8"
+	"unicode/utf8"
 )
 
 // A source position is represented by a Position value.
@@ -205,8 +205,8 @@ func (s *Scanner) next() int {
 				if s.srcEnd == 0 {
 					return EOF
 				}
-				if err != os.EOF {
-					s.error(err.String())
+				if err != io.EOF {
+					s.error(err.Error())
 					break
 				}
 			}

@@ -3,7 +3,7 @@
 package draw2d
 
 import (
-	"freetype-go.googlecode.com/hg/freetype/raster"
+	"code.google.com/p/freetype-go/freetype/raster"
 	"math"
 )
 
@@ -193,8 +193,8 @@ func (tr MatrixTransform) GetScale() float64 {
 }
 
 func (tr MatrixTransform) GetMaxAbsScaling() (s float64) {
-	sx := math.Fabs(tr[0])
-	sy := math.Fabs(tr[3])
+	sx := math.Abs(tr[0])
+	sy := math.Abs(tr[3])
 	if sx > sy {
 		return sx
 	}
@@ -202,8 +202,8 @@ func (tr MatrixTransform) GetMaxAbsScaling() (s float64) {
 }
 
 func (tr MatrixTransform) GetMinAbsScaling() (s float64) {
-	sx := math.Fabs(tr[0])
-	sy := math.Fabs(tr[3])
+	sx := math.Abs(tr[0])
+	sy := math.Abs(tr[3])
 	if sx > sy {
 		return sy
 	}
@@ -246,7 +246,7 @@ func (tr MatrixTransform) IsTranslation() bool {
  * return true if the distance between the two floats is less than epsilon, false otherwise
  */
 func fequals(float1, float2 float64) bool {
-	return math.Fabs(float1-float2) <= epsilon
+	return math.Abs(float1-float2) <= epsilon
 }
 
 // this VertexConverter apply the Matrix transformation tr

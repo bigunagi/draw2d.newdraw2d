@@ -3,7 +3,7 @@ package raster
 import (
 	"bufio"
 	"code.google.com/p/draw2d.hg/curve"
-	"freetype-go.googlecode.com/hg/freetype/raster"
+	"code.google.com/p/freetype-go/freetype/raster"
 	"image"
 	"image/color"
 	"image/png"
