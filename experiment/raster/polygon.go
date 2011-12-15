@@ -2,6 +2,8 @@
 // created: 27/05/2011 by Laurent Le Goff
 package raster
 
+import "math"
+
 const (
 	POLYGON_CLIP_NONE = iota
 	POLYGON_CLIP_LEFT
@@ -37,7 +39,7 @@ type PolygonScanEdge struct {
  *  \param aClipRectangle the clip rectangle.
  *  \return the amount of edges in the result.
  */
-func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [6]float64, clipBound [4]float64) int {
+func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [6]float64, clipBound [4]float64) (int, [4]float64) {
 	startIndex = startIndex * 2
 	endIndex := startIndex + vertexCount*2
 	if endIndex > len(p) {
@@ -68,11 +70,26 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 	var k, clipFlags, clipSum, clipUnion int
 	var xleft, yleft, xright, yright, oldY, maxX, minX float64
 	var swapWinding int16
+	var bound [4]float64
+	bound[0] = math.Inf(1)
+	bound[1] = math.Inf(1)
+	bound[2] = math.Inf(-1)
+	bound[3] = math.Inf(-1)
 	for n := startIndex; n < endIndex; n = n + 2 {
 		k = (n + 2) % len(p)
 		x = p[k]*tr[0] + p[k+1]*tr[2] + tr[4]
 		y = p[k]*tr[1] + p[k+1]*tr[3] + tr[5]
-
+		if x < bound[0] {
+			bound[0] = x
+		} else if x > bound[2] {
+			bound[2] = x
+		}
+		if y < bound[1] {
+			bound[1] = y
+		} else if x > bound[2] {
+			bound[2] = y
+		}
+		
 		//! Calculates the clip flags for a point.
 		clipFlags = POLYGON_CLIP_NONE
 		if prevX < clipBound[0] {
@@ -163,7 +180,7 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 		prevY = y
 	}
 
-	return edgeCount
+	return edgeCount, bound
 }
 
 
