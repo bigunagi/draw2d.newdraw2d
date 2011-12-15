@@ -118,11 +118,7 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 	p := 0
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
-	var bound [4]float64
-	bound[0] = (*polygon)[0]
-	bound[1] = (*polygon)[1]
-	bound[2] = (*polygon)[0]
-	bound[3] = (*polygon)[1]
+	bound := [4]float64{(*polygon)[0], (*polygon)[1], (*polygon)[0], (*polygon)[1]}
 	for p < l {
 		edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
 		bound = union(bound, subbound)
@@ -262,11 +258,7 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	p := 0
 	l := len(*polygon) / 2
 	var edges [32]PolygonEdge
-	var bound [4]float64
-	bound[0] = (*polygon)[0]
-	bound[1] = (*polygon)[1]
-	bound[2] = (*polygon)[0]
-	bound[3] = (*polygon)[1]
+	bound := [4]float64{(*polygon)[0], (*polygon)[1], (*polygon)[0], (*polygon)[1]}
 	for p < l {
 		edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
 		bound = union(bound, subbound)
