@@ -1,11 +1,11 @@
 package draw2dgl
 
 import (
+	"draw2d.googlecode.com/hg/draw2d"
+	"freetype-go.googlecode.com/hg/freetype/raster"
+	"gl"
 	"image"
 	"image/draw"
-	"gl"
-	"freetype-go.googlecode.com/hg/freetype/raster"
-	"draw2d.googlecode.com/hg/draw2d"
 	//"log"
 )
 
@@ -81,7 +81,6 @@ func (p *GLPainter) Flush() {
 	}
 }
 
-
 // SetColor sets the color to paint the spans.
 func (p *GLPainter) SetColor(c image.Color) {
 	r, g, b, a := c.RGBA()
@@ -106,7 +105,6 @@ func NewGLPainter() *GLPainter {
 	return p
 }
 
-
 type GraphicContext struct {
 	*draw2d.StackGraphicContext
 	painter          *GLPainter
@@ -117,7 +115,6 @@ type GraphicContext struct {
 type GLVertex struct {
 	x, y float64
 }
-
 
 func NewGLVertex() *GLVertex {
 	return &GLVertex{}
@@ -167,7 +164,6 @@ func (gc *GraphicContext) DrawImage(img image.Image) {
 func (gc *GraphicContext) FillString(text string) (cursor float64) {
 	return 0
 }
-
 
 func (gc *GraphicContext) paint(rasterizer *raster.Rasterizer, color image.Color) {
 	gc.painter.SetColor(color)

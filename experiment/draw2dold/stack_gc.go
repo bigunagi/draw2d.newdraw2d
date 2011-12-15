@@ -26,7 +26,6 @@ type ContextStack struct {
 	previous    *ContextStack
 }
 
-
 /**
  * Create a new Graphic context from an image
  */
@@ -45,7 +44,6 @@ func NewStackGraphicContext() *StackGraphicContext {
 	gc.Current.FontData = defaultFontData
 	return gc
 }
-
 
 func (gc *StackGraphicContext) GetMatrixTransform() MatrixTransform {
 	return gc.Current.Tr

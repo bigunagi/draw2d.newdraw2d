@@ -6,7 +6,6 @@ import (
 	"math"
 )
 
-
 //high level path creation
 
 

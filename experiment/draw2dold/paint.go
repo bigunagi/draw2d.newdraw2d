@@ -74,7 +74,7 @@ func (r *NRGBAPainter) Paint(ss []raster.Span, done bool) {
 			}
 		}
 	}
-	
+
 }
 
 // SetColor sets the color to paint the spans.

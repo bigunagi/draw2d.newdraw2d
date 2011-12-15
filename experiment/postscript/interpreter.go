@@ -4,13 +4,12 @@
 package postscript
 
 import (
-	"os"
-	"log"
-	"strconv"
-	"io"
 	"draw2d.googlecode.com/hg/draw2d"
+	"io"
+	"log"
+	"os"
+	"strconv"
 )
-
 
 type Interpreter struct {
 	valueStack      ValueStack
@@ -216,7 +215,6 @@ func (interpreter *Interpreter) Define(name string, value Value) {
 func (interpreter *Interpreter) SystemDefine(name string, value Value) {
 	interpreter.dictionaryStack[0][name] = value
 }
-
 
 //Operand Operation
 

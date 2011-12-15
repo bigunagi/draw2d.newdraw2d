@@ -39,7 +39,6 @@ func cubicBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, x4, y4, approximatio
 	recursiveCubicBezier(v, x1, y1, x2, y2, x3, y3, x4, y4, 0, distanceToleranceSquare, angleTolerance, cuspLimit)
 }
 
-
 /*
  * see cubicBezier comments for approximationScale and angleTolerance definition
  */
@@ -50,7 +49,6 @@ func quadraticBezier(v VertexConverter, x1, y1, x2, y2, x3, y3, approximationSca
 	recursiveQuadraticBezierBezier(v, x1, y1, x2, y2, x3, y3, 0, distanceToleranceSquare, angleTolerance)
 }
 
-
 func computeCuspLimit(v float64) (r float64) {
 	if v == 0.0 {
 		r = 0.0
@@ -59,7 +57,6 @@ func computeCuspLimit(v float64) (r float64) {
 	}
 	return
 }
-
 
 /**
  * http://www.antigrain.com/research/adaptive_bezier/index.html

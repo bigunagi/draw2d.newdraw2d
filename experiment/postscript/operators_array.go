@@ -3,7 +3,6 @@
 
 package postscript
 
-
 import ()
 //int array array -> Create array of length int
 func array(interpreter *Interpreter) {
