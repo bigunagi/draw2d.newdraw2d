@@ -14,7 +14,6 @@ const (
 
 type Polygon []float64
 
-
 type PolygonEdge struct {
 	X, Slope            float64
 	FirstLine, LastLine int
@@ -89,7 +88,7 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 		} else if y > bound[3] {
 			bound[3] = y
 		}
-		
+
 		//! Calculates the clip flags for a point.
 		clipFlags = POLYGON_CLIP_NONE
 		if prevX < clipBound[0] {
@@ -183,7 +182,6 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 	return edgeCount, bound
 }
 
-
 //! Creates a polygon edge between two vectors.
 /*! Clips the edge vertically to the clip rectangle. Returns true for edges that
  *  should be rendered, false for others.
@@ -245,7 +243,6 @@ func getEdge(x0, y0, x1, y1 float64, edge *PolygonEdge, clipBound [4]float64) bo
 	return true
 }
 
-
 //! Creates a vertical polygon edge between two y values.
 /*! Clips the edge vertically to the clip rectangle. Returns true for edges that
  *  should be rendered, false for others.
@@ -293,7 +290,6 @@ func getVerticalEdge(startY, endY, x float64, edge *PolygonEdge, clipBound [4]fl
 
 	return true
 }
-
 
 type VertexData struct {
 	X, Y      float64

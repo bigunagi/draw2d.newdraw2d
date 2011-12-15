@@ -36,7 +36,6 @@ func arc(t VertexConverter, x, y, rx, ry, start, angle, scale float64) (lastX, l
 	return curX, curY
 }
 
-
 func arcAdder(adder raster.Adder, x, y, rx, ry, start, angle, scale float64) raster.Point {
 	end := start + angle
 	clockWise := true

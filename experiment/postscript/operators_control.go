@@ -69,7 +69,6 @@ func stopped(interpreter *Interpreter) {
 	interpreter.Push(false)
 }
 
-
 func initControlOperators(interpreter *Interpreter) {
 	interpreter.SystemDefine("exec", NewOperator(exec))
 	interpreter.SystemDefine("if", NewOperator(ifoperator))

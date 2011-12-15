@@ -3,11 +3,11 @@
 package draw2d
 
 import (
-	"image/draw"
-	"image"
-	"log"
 	"freetype-go.googlecode.com/hg/freetype"
 	"freetype-go.googlecode.com/hg/freetype/raster"
+	"image"
+	"image/draw"
+	"log"
 )
 
 type Painter interface {
@@ -60,7 +60,6 @@ func NewGraphicContext(img draw.Image) *ImageGraphicContext {
 	return gc
 }
 
-
 func (gc *ImageGraphicContext) SetDPI(dpi int) {
 	gc.DPI = dpi
 	gc.freetype.SetDPI(dpi)
@@ -111,7 +110,6 @@ func (gc *ImageGraphicContext) FillString(text string) (cursor float64) {
 	width := x2 - x1
 	return width
 }
-
 
 func (gc *ImageGraphicContext) paint(rasterizer *raster.Rasterizer, color image.Color) {
 	gc.painter.SetColor(color)
@@ -172,7 +170,6 @@ func (gc *ImageGraphicContext) FillStroke(paths ...*PathStorage) {
 	gc.paint(gc.fillRasterizer, gc.Current.FillColor)
 	gc.paint(gc.strokeRasterizer, gc.Current.StrokeColor)
 }
-
 
 func (f FillRule) UseNonZeroWinding() bool {
 	switch f {

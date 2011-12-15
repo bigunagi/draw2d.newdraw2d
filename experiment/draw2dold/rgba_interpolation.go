@@ -2,8 +2,8 @@
 package draw2d
 
 import (
-	"image/draw"
 	"image"
+	"image/draw"
 	"math"
 )
 
@@ -52,7 +52,6 @@ func getColorBilinear(img image.Image, x, y float64) image.Color {
 func lerp(v1, v2, ratio float64) float64 {
 	return v1*(1-ratio) + v2*ratio
 }
-
 
 func getColorCubicRow(img image.Image, x, y, offset float64) image.Color {
 	c0 := img.At(int(x), int(y))

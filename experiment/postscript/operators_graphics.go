@@ -5,12 +5,11 @@
 package postscript
 
 import (
-	"image"
 	"draw2d.googlecode.com/hg/draw2d"
-	"math"
+	"image"
 	"log"
+	"math"
 )
-
 
 //Path Construction Operators
 func newpath(interpreter *Interpreter) {
@@ -283,7 +282,6 @@ func currentflat(interpreter *Interpreter) {
 	log.Printf("currentflat not yet implemented")
 }
 
-
 // Coordinate System and Matrix operators
 func matrix(interpreter *Interpreter) {
 	interpreter.Push(draw2d.NewIdentityMatrix())
@@ -419,7 +417,6 @@ func scale(interpreter *Interpreter) {
 		interpreter.Push(matrix)
 	}
 }
-
 
 func initDrawingOperators(interpreter *Interpreter) {
 

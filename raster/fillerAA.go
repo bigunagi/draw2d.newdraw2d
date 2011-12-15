@@ -9,13 +9,12 @@ import (
 )
 
 const (
-	SUBPIXEL_SHIFT = 3
-	SUBPIXEL_COUNT = 1 << SUBPIXEL_SHIFT
+	SUBPIXEL_SHIFT         = 3
+	SUBPIXEL_COUNT         = 1 << SUBPIXEL_SHIFT
 	SUBPIXEL_FULL_COVERAGE = 0xff
 )
 
 var SUBPIXEL_OFFSETS = SUBPIXEL_OFFSETS_SAMPLE_8_FIXED
-
 
 type SUBPIXEL_DATA uint8
 type NON_ZERO_MASK_DATA_UNIT uint8
@@ -127,7 +126,7 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 		}
 		p += 16
 	}
-	clipRect  = intersect(clipRect, bound)
+	clipRect = intersect(clipRect, bound)
 	r.fillEvenOdd(img, color, clipRect)
 }
 
@@ -217,13 +216,13 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
 			if alpha == SUBPIXEL_FULL_COVERAGE {
 				*p = *pixColor
 			} else if alpha != 0 {
-				invAlpha := SUBPIXEL_COUNT - alpha				
+				invAlpha := SUBPIXEL_COUNT - alpha
 				ct1 := *p & 0xff00ff * invAlpha
 				ct2 := *p >> 8 & 0xff00ff * invAlpha
-	
+
 				ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
 				ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
-	
+
 				*p = ct1 + ct2
 			}
 		}
@@ -262,7 +261,7 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	for p < l {
 		edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
 		bound = union(bound, subbound)
-		
+
 		for k := 0; k < edgeCount; k++ {
 			r.addNonZeroEdge(&edges[k])
 		}
@@ -271,7 +270,6 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	clipRect = intersect(clipRect, bound)
 	r.fillNonZero(img, color, clipRect)
 }
-
 
 //! Renders the mask to the canvas with non-zero winding fill.
 func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, clipBound [4]float64) {

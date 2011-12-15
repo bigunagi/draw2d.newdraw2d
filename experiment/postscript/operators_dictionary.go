@@ -3,7 +3,6 @@
 
 package postscript
 
-
 import (
 	"log"
 )
