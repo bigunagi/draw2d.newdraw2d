@@ -4,6 +4,7 @@ package raster
 
 import (
 	"image"
+	"image/color"
 	"unsafe"
 )
 
@@ -87,7 +88,7 @@ func intersect(r1, r2 [4]float64) [4]float64 {
 	return r1
 }
 
-func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *image.RGBAColor, polygon *Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA, polygon *Polygon, tr [6]float64) {
 	// memset 0 the mask buffer
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 
@@ -169,7 +170,7 @@ func (r *Rasterizer8BitsSample) addNonZeroEdge(edge *PolygonEdge) {
 }
 
 // Renders the mask to the canvas with even-odd fill.
-func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *image.RGBAColor, clipBound [4]float64) {
+func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, clipBound [4]float64) {
 	var x, y uint32
 
 	minX := uint32(clipBound[0])
@@ -191,7 +192,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *image.RGBACo
 
 		mask = 0
 		for x = minX; x <= maxX; x++ {
-			p := (*uint32)(unsafe.Pointer(&tp[x]))
+			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
 			mask ^= r.MaskBuffer[y*uint32(r.BufferWidth)+x]
 			// 8bits
 			alpha := uint32(coverageTable[mask])
@@ -221,7 +222,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *image.RGBACo
  *  param aColor the color to be used for rendering.
  *  param aTransformation the transformation matrix.
  */
-func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *image.RGBAColor, polygon *Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *color.RGBA, polygon *Polygon, tr [6]float64) {
 
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 	r.WindingBuffer = make([]NON_ZERO_MASK_DATA_UNIT, r.BufferWidth*r.Height*SUBPIXEL_COUNT)
@@ -255,7 +256,7 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *ima
 
 
 //! Renders the mask to the canvas with non-zero winding fill.
-func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *image.RGBAColor, clipBound [4]float64) {
+func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, clipBound [4]float64) {
 	var x, y uint32
 
 	minX := uint32(clipBound[0])
@@ -273,16 +274,13 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *image.RGBACo
 	var mask SUBPIXEL_DATA
 	var n uint32
 	var values [SUBPIXEL_COUNT]NON_ZERO_MASK_DATA_UNIT
-	for n = 0; n < SUBPIXEL_COUNT; n++ {
-		values[n] = 0
-	}
 
 	for y = minY; y < maxY; y++ {
 		tp := img.Pix[y*stride:]
 
 		mask = 0
 		for x = minX; x <= maxX; x++ {
-			p := (*uint32)(unsafe.Pointer(&tp[x]))
+			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
 			temp := r.MaskBuffer[y*uint32(r.BufferWidth)+x]
 			if temp != 0 {
 				var bit SUBPIXEL_DATA = 1
