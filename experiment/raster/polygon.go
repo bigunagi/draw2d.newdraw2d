@@ -86,8 +86,8 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 		}
 		if y < bound[1] {
 			bound[1] = y
-		} else if x > bound[2] {
-			bound[2] = y
+		} else if y > bound[3] {
+			bound[3] = y
 		}
 		
 		//! Calculates the clip flags for a point.
