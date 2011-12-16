@@ -2,10 +2,12 @@
 // created: 27/05/2011 by Laurent Le Goff
 package raster
 
-import "math"
+import (
+	"math"
+)
 
 const (
-	POLYGON_CLIP_NONE = iota
+	POLYGON_CLIP_NONE = 1 << iota
 	POLYGON_CLIP_LEFT
 	POLYGON_CLIP_RIGHT
 	POLYGON_CLIP_TOP
@@ -89,14 +91,14 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 
 		//! Calculates the clip flags for a point.
 		clipFlags = POLYGON_CLIP_NONE
-		if prevX < clipBound[0] {
+		if x < clipBound[0] {
 			clipFlags |= POLYGON_CLIP_LEFT
-		} else if prevX >= clipBound[2] {
+		} else if x >= clipBound[2] {
 			clipFlags |= POLYGON_CLIP_RIGHT
 		}
-		if prevY < clipBound[1] {
+		if y < clipBound[1] {
 			clipFlags |= POLYGON_CLIP_TOP
-		} else if prevY >= clipBound[3] {
+		} else if y >= clipBound[3] {
 			clipFlags |= POLYGON_CLIP_BOTTOM
 		}
 
@@ -187,7 +189,6 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 func getEdge(x0, y0, x1, y1 float64, edge *PolygonEdge, clipBound [4]float64) bool {
 	var startX, startY, endX, endY float64
 	var winding int16
-
 	if y0 <= y1 {
 		startX = x0
 		startY = y0
