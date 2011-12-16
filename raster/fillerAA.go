@@ -111,7 +111,7 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color color.Color
 		tr[4]*r.RemappingMatrix[0] + tr[5]*r.RemappingMatrix[2] + r.RemappingMatrix[4],
 		tr[5]*r.RemappingMatrix[3] + tr[4]*r.RemappingMatrix[1] + r.RemappingMatrix[5],
 	}
-	
+
 	clipRect := clip(img.Bounds().Min.X, img.Bounds().Min.Y, img.Bounds().Dx(), img.Bounds().Dy(), SUBPIXEL_COUNT)
 	clipRect = intersect(clipRect, r.ClipBound)
 	var edges [32]PolygonEdge
@@ -157,7 +157,7 @@ func (r *Rasterizer8BitsSample) addEvenOddEdge(edge *PolygonEdge) {
 	}
 }
 
-func convert(c color.Color) color.RGBA{
+func convert(c color.Color) color.RGBA {
 	if rgba, ok := c.(color.RGBA); ok {
 		return rgba
 	}
@@ -177,7 +177,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, c color.Color, clip
 
 	rgba := convert(c)
 	pixColor := *(*uint32)(unsafe.Pointer(&rgba))
-	
+
 	cs1 := pixColor & 0xff00ff
 	cs2 := pixColor >> 8 & 0xff00ff
 
@@ -186,13 +186,15 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, c color.Color, clip
 	maskY := minY * uint32(r.BufferWidth)
 	minY *= stride
 	maxY *= stride
-	
-	for y = minY; y < maxY; y+=stride {
-		tp := img.Pix[y:]
+	var tp []uint8
+	var pixelx uint32
+	for y = minY; y < maxY; y += stride {
+		tp = img.Pix[y:]
 		mask = 0
-		maskY += uint32(r.BufferWidth)
+
 		//i0 := (s.Y-r.Image.Rect.Min.Y)*r.Image.Stride + (s.X0-r.Image.Rect.Min.X)*4
 		//i1 := i0 + (s.X1-s.X0)*4
+		pixelx = minX * 4
 		for x = minX; x <= maxX; x++ {
 			mask ^= r.MaskBuffer[maskY+x]
 			// 8bits
@@ -203,7 +205,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, c color.Color, clip
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff] + coverageTable[(mask >> 16) & 0xff] + coverageTable[(mask >> 24) & 0xff])
 
 			// alpha is in range of 0 to SUBPIXEL_COUNT
-			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
+			p := (*uint32)(unsafe.Pointer(&tp[pixelx]))
 			if alpha == SUBPIXEL_FULL_COVERAGE {
 				*p = pixColor
 			} else if alpha != 0 {
@@ -216,7 +218,9 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, c color.Color, clip
 
 				*p = ct1 + ct2
 			}
+			pixelx += 4
 		}
+		maskY += uint32(r.BufferWidth)
 	}
 }
 
@@ -314,11 +318,11 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, c color.Color, clip
 	maskY := minY * uint32(r.BufferWidth)
 	minY *= stride
 	maxY *= stride
-	
-	for y = minY; y < maxY; y+=stride {
+	var pixelx uint32
+	for y = minY; y < maxY; y += stride {
 		tp := img.Pix[y:]
 		mask = 0
-		maskY += uint32(r.BufferWidth)
+		pixelx = minX * 4
 		for x = minX; x <= maxX; x++ {
 			temp := r.MaskBuffer[maskY+x]
 			if temp != 0 {
@@ -334,29 +338,31 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, c color.Color, clip
 					bit <<= 1
 				}
 			}
-			
+
 			// 8bits
 			alpha := uint32(coverageTable[mask])
 			// 16bits
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff])
 			// 32bits
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff] + coverageTable[(mask >> 16) & 0xff] + coverageTable[(mask >> 24) & 0xff])
-			
-			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
+
+			p := (*uint32)(unsafe.Pointer(&tp[pixelx]))
 			if alpha == SUBPIXEL_FULL_COVERAGE {
 				*p = pixColor
 			} else if alpha != 0 {
-						// alpha is in range of 0 to SUBPIXEL_COUNT
+				// alpha is in range of 0 to SUBPIXEL_COUNT
 				invAlpha := uint32(SUBPIXEL_COUNT) - alpha
-	
+
 				ct1 := *p & 0xff00ff * invAlpha
 				ct2 := *p >> 8 & 0xff00ff * invAlpha
-	
+
 				ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
 				ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
-	
+
 				*p = ct1 + ct2
 			}
+			pixelx += 4
 		}
+		maskY += uint32(r.BufferWidth)
 	}
 }
