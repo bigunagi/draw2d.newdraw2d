@@ -107,7 +107,7 @@ func TestRasterizer(t *testing.T) {
 	//PolylineBresenham(img, image.Black, poly...)
 
 
-	r.RenderEvenOdd(img, &color, []Polygon{poly}, tr)
+	r.RenderEvenOdd(img, color, []Polygon{poly}, tr)
 	savepng("_testRasterizer.png", img)
 }
 
@@ -124,7 +124,7 @@ func TestRasterizerNonZeroWinding(t *testing.T) {
 	//PolylineBresenham(img, image.Black, poly...)
 
 
-	r.RenderNonZeroWinding(img, &color, []Polygon{poly}, tr)
+	r.RenderNonZeroWinding(img, color, []Polygon{poly}, tr)
 	savepng("_testRasterizerNonZeroWinding.png", img)
 }
 
@@ -135,10 +135,9 @@ func BenchmarkFreetype(b *testing.B) {
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
 	color := color.RGBA{0, 0, 0, 0xff}
-
+	rasterizer := raster.NewRasterizer(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		rasterizer := raster.NewRasterizer(200, 200)
 		rasterizer.UseNonZeroWinding = false
 		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
 		for j := 0; j < len(poly); j = j + 2 {
@@ -147,6 +146,7 @@ func BenchmarkFreetype(b *testing.B) {
 		painter := raster.NewRGBAPainter(img)
 		painter.SetColor(color)
 		rasterizer.Rasterize(painter)
+		rasterizer.Clear()
 	}
 }
 func BenchmarkFreetypeNonZeroWinding(b *testing.B) {
@@ -156,10 +156,9 @@ func BenchmarkFreetypeNonZeroWinding(b *testing.B) {
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
 	color := color.RGBA{0, 0, 0, 0xff}
-
+	rasterizer := raster.NewRasterizer(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		rasterizer := raster.NewRasterizer(200, 200)
 		rasterizer.UseNonZeroWinding = true
 		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
 		for j := 0; j < len(poly); j = j + 2 {
@@ -168,6 +167,7 @@ func BenchmarkFreetypeNonZeroWinding(b *testing.B) {
 		painter := raster.NewRGBAPainter(img)
 		painter.SetColor(color)
 		rasterizer.Rasterize(painter)
+		rasterizer.Clear()
 	}
 }
 
@@ -179,10 +179,11 @@ func BenchmarkRasterizerNonZeroWinding(b *testing.B) {
 	poly := Polygon(p.points)
 	color := color.RGBA{0, 0, 0, 0xff}
 	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	rasterizer := NewRasterizer8BitsSample(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		rasterizer := NewRasterizer8BitsSample(200, 200)
-		rasterizer.RenderNonZeroWinding(img, &color, []Polygon{poly}, tr)
+		
+		rasterizer.RenderNonZeroWinding(img, color, []Polygon{poly}, tr)
 	}
 }
 
@@ -194,9 +195,10 @@ func BenchmarkRasterizer(b *testing.B) {
 	poly := Polygon(p.points)
 	color := color.RGBA{0, 0, 0, 0xff}
 	tr := [6]float64{1, 0, 0, 1, 0, 0}
+	rasterizer := NewRasterizer8BitsSample(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		rasterizer := NewRasterizer8BitsSample(200, 200)
-		rasterizer.RenderEvenOdd(img, &color, []Polygon{poly}, tr)
+		
+		rasterizer.RenderEvenOdd(img, color, []Polygon{poly}, tr)
 	}
 }
