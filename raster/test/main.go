@@ -23,6 +23,11 @@ var (
 			[]raster.Polygon{{10, 10, 110, 10, 110, 110, 10, 110}},
 			color.RGBA{0, 0, 0, 0xff},
 		},
+		{
+			"Rectangle2", 120, 120,
+			[]raster.Polygon{{0, 0, 120, 0, 120, 120, 0, 120}},
+			color.RGBA{0, 0, 0, 0xff},
+		},
 	}
 )
 

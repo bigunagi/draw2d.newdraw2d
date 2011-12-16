@@ -128,7 +128,6 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 			p += 16
 		}
 	}
-
 	clipRect = intersect(clipRect, bound)
 	r.fillEvenOdd(img, color, clipRect)
 }
@@ -139,7 +138,7 @@ func (r *Rasterizer8BitsSample) addEvenOddEdge(edge *PolygonEdge) {
 	slope := Fix(edge.Slope * FIXED_FLOAT_COEF)
 	slopeFix := Fix(0)
 	if edge.LastLine-edge.FirstLine >= SLOPE_FIX_STEP {
-		slopeFix = Fix(edge.Slope*SLOPE_FIX_STEP*FIXED_FLOAT_COEF) - slope<<SLOPE_FIX_SHIFT
+		slopeFix = Fix(edge.Slope*SLOPE_FIX_STEP*FIXED_FLOAT_COEF) - (slope << SLOPE_FIX_SHIFT)
 	}
 
 	var mask SUBPIXEL_DATA
