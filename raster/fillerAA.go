@@ -98,7 +98,7 @@ func intersect(r1, r2 [4]float64) [4]float64 {
 	return r1
 }
 
-func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA, polygons []Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color color.Color, polygons []Polygon, tr [6]float64) {
 	// memset 0 the mask buffer
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 
@@ -184,7 +184,7 @@ func (r *Rasterizer8BitsSample) addNonZeroEdge(edge *PolygonEdge) {
 }
 
 // Renders the mask to the canvas with even-odd fill.
-func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, clipBound [4]float64) {
+func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, c color.Color, clipBound [4]float64) {
 	var x, y uint32
 
 	minX := uint32(clipBound[0])
@@ -193,10 +193,11 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
 	minY := uint32(clipBound[1]) >> SUBPIXEL_SHIFT
 	maxY := uint32(clipBound[3]) >> SUBPIXEL_SHIFT
 
-	//pixColor :=  (uint32(color.R) << 24) |  (uint32(color.G) << 16) |  (uint32(color.B) << 8) | uint32(color.A)
-	pixColor := (*uint32)(unsafe.Pointer(color))
-	cs1 := *pixColor & 0xff00ff
-	cs2 := *pixColor >> 8 & 0xff00ff
+	rgba := color.RGBAModel.Convert(c)
+	pixColor := *(*uint32)(unsafe.Pointer(&rgba))
+	
+	cs1 := pixColor & 0xff00ff
+	cs2 := pixColor >> 8 & 0xff00ff
 
 	stride := uint32(img.Stride)
 	var mask SUBPIXEL_DATA
@@ -216,7 +217,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
 			// alpha is in range of 0 to SUBPIXEL_COUNT
 			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
 			if alpha == SUBPIXEL_FULL_COVERAGE {
-				*p = *pixColor
+				*p = pixColor
 			} else if alpha != 0 {
 				invAlpha := SUBPIXEL_COUNT - alpha
 				ct1 := *p & 0xff00ff * invAlpha
@@ -238,7 +239,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
  *  param aColor the color to be used for rendering.
  *  param aTransformation the transformation matrix.
  */
-func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *color.RGBA, polygons []Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color color.Color, polygons []Polygon, tr [6]float64) {
 
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 	r.WindingBuffer = make([]NON_ZERO_MASK_DATA_UNIT, r.BufferWidth*r.Height*SUBPIXEL_COUNT)
@@ -277,7 +278,7 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 }
 
 //! Renders the mask to the canvas with non-zero winding fill.
-func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, clipBound [4]float64) {
+func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, c color.Color, clipBound [4]float64) {
 	var x, y uint32
 
 	minX := uint32(clipBound[0])
@@ -286,10 +287,11 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, 
 	minY := uint32(clipBound[1]) >> SUBPIXEL_SHIFT
 	maxY := uint32(clipBound[3]) >> SUBPIXEL_SHIFT
 
-	//pixColor :=  (uint32(color.R) << 24) |  (uint32(color.G) << 16) |  (uint32(color.B) << 8) | uint32(color.A)
-	pixColor := (*uint32)(unsafe.Pointer(color))
-	cs1 := *pixColor & 0xff00ff
-	cs2 := *pixColor >> 8 & 0xff00ff
+	rgba := color.RGBAModel.Convert(c)
+	pixColor := *(*uint32)(unsafe.Pointer(&rgba))
+	
+	cs1 := pixColor & 0xff00ff
+	cs2 := pixColor >> 8 & 0xff00ff
 
 	stride := uint32(img.Stride)
 	var mask SUBPIXEL_DATA
@@ -298,10 +300,8 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, 
 
 	for y = minY; y < maxY; y++ {
 		tp := img.Pix[y*stride:]
-
 		mask = 0
 		for x = minX; x <= maxX; x++ {
-			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
 			temp := r.MaskBuffer[y*uint32(r.BufferWidth)+x]
 			if temp != 0 {
 				var bit SUBPIXEL_DATA = 1
@@ -316,24 +316,29 @@ func (r *Rasterizer8BitsSample) fillNonZero(img *image.RGBA, color *color.RGBA, 
 					bit <<= 1
 				}
 			}
-
+			
 			// 8bits
 			alpha := uint32(coverageTable[mask])
 			// 16bits
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff])
 			// 32bits
 			//alpha := uint32(coverageTable[mask & 0xff] + coverageTable[(mask >> 8) & 0xff] + coverageTable[(mask >> 16) & 0xff] + coverageTable[(mask >> 24) & 0xff])
-
-			// alpha is in range of 0 to SUBPIXEL_COUNT
-			invAlpha := uint32(SUBPIXEL_COUNT) - alpha
-
-			ct1 := *p & 0xff00ff * invAlpha
-			ct2 := *p >> 8 & 0xff00ff * invAlpha
-
-			ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
-			ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
-
-			*p = ct1 + ct2
+			
+			p := (*uint32)(unsafe.Pointer(&tp[x*4]))
+			if alpha == SUBPIXEL_FULL_COVERAGE {
+				*p = pixColor
+			} else if alpha != 0 {
+						// alpha is in range of 0 to SUBPIXEL_COUNT
+				invAlpha := uint32(SUBPIXEL_COUNT) - alpha
+	
+				ct1 := *p & 0xff00ff * invAlpha
+				ct2 := *p >> 8 & 0xff00ff * invAlpha
+	
+				ct1 = (ct1 + cs1*alpha) >> SUBPIXEL_SHIFT & 0xff00ff
+				ct2 = (ct2 + cs2*alpha) << (8 - SUBPIXEL_SHIFT) & 0xff00ff00
+	
+				*p = ct1 + ct2
+			}
 		}
 	}
 }
