@@ -98,7 +98,7 @@ func intersect(r1, r2 [4]float64) [4]float64 {
 	return r1
 }
 
-func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA, polygon Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA, polygons []Polygon, tr [6]float64) {
 	// memset 0 the mask buffer
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 
@@ -114,19 +114,22 @@ func (r *Rasterizer8BitsSample) RenderEvenOdd(img *image.RGBA, color *color.RGBA
 
 	clipRect := clip(img.Bounds().Min.X, img.Bounds().Min.Y, img.Bounds().Dx(), img.Bounds().Dy(), SUBPIXEL_COUNT)
 	clipRect = intersect(clipRect, r.ClipBound)
-	p := 0
-	l := len(polygon) / 2
 	var edges [32]PolygonEdge
-	//bound := [4]float64{polygon[0], polygon[1], polygon[0], polygon[1]}
-	for p < l {
-		edgeCount, _ := polygon.getEdges(p, 16, edges[:], transform, clipRect)
-		//bound = union(bound, subbound)
-		for k := 0; k < edgeCount; k++ {
-			r.addEvenOddEdge(&edges[k])
+	bound := [4]float64{polygons[0][0], polygons[0][1], polygons[0][0], polygons[0][1]}
+	for _, polygon := range polygons {
+		p := 0
+		l := len(polygon) / 2
+		for p < l {
+			edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+			bound = union(bound, subbound)
+			for k := 0; k < edgeCount; k++ {
+				r.addEvenOddEdge(&edges[k])
+			}
+			p += 16
 		}
-		p += 16
 	}
-	//clipRect = intersect(clipRect, bound)
+
+	clipRect = intersect(clipRect, bound)
 	r.fillEvenOdd(img, color, clipRect)
 }
 
@@ -236,7 +239,7 @@ func (r *Rasterizer8BitsSample) fillEvenOdd(img *image.RGBA, color *color.RGBA, 
  *  param aColor the color to be used for rendering.
  *  param aTransformation the transformation matrix.
  */
-func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *color.RGBA, polygon Polygon, tr [6]float64) {
+func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *color.RGBA, polygons []Polygon, tr [6]float64) {
 
 	r.MaskBuffer = make([]SUBPIXEL_DATA, r.BufferWidth*r.Height)
 	r.WindingBuffer = make([]NON_ZERO_MASK_DATA_UNIT, r.BufferWidth*r.Height*SUBPIXEL_COUNT)
@@ -254,20 +257,23 @@ func (r *Rasterizer8BitsSample) RenderNonZeroWinding(img *image.RGBA, color *col
 	clipRect := clip(img.Bounds().Min.X, img.Bounds().Min.Y, img.Bounds().Dx(), img.Bounds().Dy(), SUBPIXEL_COUNT)
 	clipRect = intersect(clipRect, r.ClipBound)
 
-	p := 0
-	l := len(polygon) / 2
+	bound := [4]float64{polygons[0][0], polygons[0][1], polygons[0][0], polygons[0][1]}
 	var edges [32]PolygonEdge
-	//bound := [4]float64{polygon[0], polygon[1], polygon[0], polygon[1]}
-	for p < l {
-		edgeCount, _ := polygon.getEdges(p, 16, edges[:], transform, clipRect)
-		//bound = union(bound, subbound)
+	for _, polygon := range polygons {
+		p := 0
+		l := len(polygon) / 2
 
-		for k := 0; k < edgeCount; k++ {
-			r.addNonZeroEdge(&edges[k])
+		for p < l {
+			edgeCount, subbound := polygon.getEdges(p, 16, edges[:], transform, clipRect)
+			bound = union(bound, subbound)
+
+			for k := 0; k < edgeCount; k++ {
+				r.addNonZeroEdge(&edges[k])
+			}
+			p += 16
 		}
-		p += 16
 	}
-	//clipRect = intersect(clipRect, bound)
+	clipRect = intersect(clipRect, bound)
 	r.fillNonZero(img, color, clipRect)
 }
 

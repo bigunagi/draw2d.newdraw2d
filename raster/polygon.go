@@ -69,23 +69,21 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 	var k, clipFlags, clipSum, clipUnion int
 	var xleft, yleft, xright, yright, oldY, maxX, minX float64
 	var swapWinding int16
-	var bound [4]float64
-	bound[0] = math.Inf(1)
-	bound[1] = math.Inf(1)
-	bound[2] = math.Inf(-1)
-	bound[3] = math.Inf(-1)
+	bound := [4]float64{math.Inf(1), math.Inf(1), math.Inf(-1), math.Inf(-1)}
 	for n := startIndex; n < endIndex; n = n + 2 {
 		k = (n + 2) % len(p)
 		x = p[k]*tr[0] + p[k+1]*tr[2] + tr[4]
 		y = p[k]*tr[1] + p[k+1]*tr[3] + tr[5]
 		if x < bound[0] {
 			bound[0] = x
-		} else if x > bound[2] {
+		}
+		if x > bound[2] {
 			bound[2] = x
 		}
 		if y < bound[1] {
 			bound[1] = y
-		} else if y > bound[3] {
+		} 
+		if y > bound[3] {
 			bound[3] = y
 		}
 

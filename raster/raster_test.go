@@ -2,7 +2,7 @@ package raster
 
 import (
 	"bufio"
-	"code.google.com/p/draw2d.hg/curve"
+	"code.google.com/p/draw2d/curve"
 	"code.google.com/p/freetype-go/freetype/raster"
 	"image"
 	"image/color"
@@ -107,7 +107,7 @@ func TestRasterizer(t *testing.T) {
 	//PolylineBresenham(img, image.Black, poly...)
 
 
-	r.RenderEvenOdd(img, &color, &poly, tr)
+	r.RenderEvenOdd(img, &color, []Polygon{poly}, tr)
 	savepng("_testRasterizer.png", img)
 }
 
@@ -124,7 +124,7 @@ func TestRasterizerNonZeroWinding(t *testing.T) {
 	//PolylineBresenham(img, image.Black, poly...)
 
 
-	r.RenderNonZeroWinding(img, &color, &poly, tr)
+	r.RenderNonZeroWinding(img, &color, []Polygon{poly}, tr)
 	savepng("_testRasterizerNonZeroWinding.png", img)
 }
 
@@ -182,7 +182,7 @@ func BenchmarkRasterizerNonZeroWinding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
 		rasterizer := NewRasterizer8BitsSample(200, 200)
-		rasterizer.RenderNonZeroWinding(img, &color, &poly, tr)
+		rasterizer.RenderNonZeroWinding(img, &color, []Polygon{poly}, tr)
 	}
 }
 
@@ -197,6 +197,6 @@ func BenchmarkRasterizer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
 		rasterizer := NewRasterizer8BitsSample(200, 200)
-		rasterizer.RenderEvenOdd(img, &color, &poly, tr)
+		rasterizer.RenderEvenOdd(img, &color, []Polygon{poly}, tr)
 	}
 }
