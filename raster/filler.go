@@ -2,40 +2,33 @@ package raster
 
 import (
 	"image"
+	"fmt"
 )
 
-type Rasterizer struct {
-	img            *image.Alpha
-	table1, table2 []float64
+type Intersection struct {
+	x float64
+	next *Intersection
 }
 
-func NewRasterizer(width, height int) *Rasterizer {
+type Rasterizer struct {
+	table []*Intersection
+}
+
+func NewRasterizer() *Rasterizer {
 	r := new(Rasterizer)
-	r.img = image.NewAlpha(image.Rect(0, 0, width, height))
-	r.table1 = make([]float64, height)
-	r.table2 = make([]float64, height)
 	return r
 }
 
-func (r *Rasterizer) Clear() {
-	for i := 0; i < len(r.img.Pix); i++ {
-		r.img.Pix[i] = 0
-	}
-}
-
-func (r *Rasterizer) FillMonotone(p Polygon) {
+func (r *Rasterizer) Fill(img *image.Alpha, p Polygon) {
+	r.table = make([]*Intersection, img.Bounds().Dy())
 	var xmin, ymin, xmax, ymax float64
-	var ptYmin, ptYmax, i int
 	xmin = p[0]
 	ymin = p[1]
 	xmax = xmin
 	ymax = ymin
-	ptYmin = 0
-	ptYmax = 0
 	var x, y float64
-	for i = 2; i < len(p); i += 2 {
-		x = p[i]
-		y = p[i+1]
+	for i := 2; i < len(p); i += 2 {
+		x, y = p[i], p[i+1]
 		if x > xmax {
 			xmax = x
 		} else if x < xmin {
@@ -43,43 +36,17 @@ func (r *Rasterizer) FillMonotone(p Polygon) {
 		}
 		if y > ymax {
 			ymax = y
-			ptYmax = i
 		} else if y < ymin {
 			ymin = y
-			ptYmin = i
 		}
 	}
-
-	i = ptYmin
-	j := ptYmin + 2
-	if j >= len(p) {
-		j = 0
+	prevX, prevY := p[0], p[1]
+	for i := 2; i < len(p); i += 2 {
+		x, y = p[i], p[i+1]
+		r.edge(prevX, prevY, x, y)
+		prevX, prevY = x, y
 	}
-	for i != ptYmax {
-		i = j
-		j = j + 2
-		if j >= len(p) {
-			j = 0
-		}
-		r.edge(r.table1, p[i], p[i+1], p[j], p[j+1])
-	}
-
-	i = ptYmax
-	j = ptYmax + 2
-	if j >= len(p) {
-		j = 0
-	}
-	for i != ptYmin {
-		i = j
-		j = j + 2
-		if j >= len(p) {
-			j = 0
-		}
-		r.edge(r.table2, p[i], p[i+1], p[j], p[j+1])
-	}
-
-	r.scan(int(ymin+0.5), int(ymax+0.5))
-
+	r.scan(img, int(ymin+0.5), int(ymax+0.5))
 }
 
 func max(i, j int) int {
@@ -89,9 +56,9 @@ func max(i, j int) int {
 	return j
 }
 
-func (r *Rasterizer) edge(table []float64, x1, y1, x2, y2 float64) {
-	var swap float64
-	var idy, iy1, iy2 int
+func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
+	var swap, dy float64
+	var iy1, iy2 int
 	if y2 < y1 {
 		swap = x1
 		x1 = x2
@@ -102,49 +69,83 @@ func (r *Rasterizer) edge(table []float64, x1, y1, x2, y2 float64) {
 	}
 	iy1 = int(y1 + 0.5)
 	iy2 = int(y2 + 0.5)
-	idy = iy2 - iy1
+	dy = y2 - y1
 
-	if idy == 0 {
+	if dy == 0 {
 		return
 	}
-	idy = max(2, idy-1)
+	//idy = max(2, idy-1)
 
 	x := x1
-	dx := (x2 - x1) / float64(idy)
+	dx := (x2 - x1) / dy
 
 	for iy1 < iy2 {
-		table[iy1] = x
+		r.insert(x, iy1)
 		x += dx
 		iy1++
 	}
 }
 
-func (r *Rasterizer) scan(ymin, ymax int) {
-	var x1, x2, swap float64
+func (r *Rasterizer) insert(x float64, y int) {
+	i := &Intersection{x, nil}
+	if r.table[y] == nil {
+		r.table[y] = i
+		return
+	}
+	var prev *Intersection
+	current := r.table[y]
+	for current != nil && x > current.x {
+		prev = current
+		current = current.next
+	}
+	i.next = current
+	if prev != nil {
+		prev.next = i
+		return
+	}
+}
+
+func printIntersection(i *Intersection) {
+	if i == nil {
+		fmt.Print("nil")	
+	} else {
+		for i != nil {
+			fmt.Print(i.x, " ")
+			i = i.next		
+		}	
+	}
+	fmt.Println()
+}
+
+func (r *Rasterizer) scan(img *image.Alpha, ymin, ymax int) {
 	var idx, ix1, ix2 int
-
-	pix := r.img.Pix[ymin*r.img.Stride:]
+	var i,j *Intersection
+	fill := true
+	pix := img.Pix[ymin*img.Stride:]
 	for y := ymin; y < ymax; y++ {
-		x1 = r.table1[y]
-		x2 = r.table2[y]
-		pix = pix[r.img.Stride:]
-
-		if x2 < x1 {
-			swap = x1
-			x1 = x2
-			x2 = swap
-		}
-
-		ix1 = int(x1 + 0.5)
-		ix2 = int(x2 + 0.5)
-		idx = ix2 - ix1
-
-		if idx == 0 {
-			continue
-		}
-		for ix1 < ix2 {
-			pix[ix1] = 0xff
-			ix1++
+		pix = pix[img.Stride:]
+		i = r.table[y]
+		if i != nil {
+			fill = true
+			j = i.next
+			for j != nil {
+				if fill {
+					ix1 = int(i.x + 0.5)
+					ix2 = int(j.x + 0.5)
+					idx = ix2 - ix1
+			
+					if idx == 0 {
+						continue
+					}
+					for ix1 < ix2 {
+						pix[ix1] = 0xff
+						ix1++
+					}			
+				}
+				fill = !fill
+				i = j
+				j = i.next
+			}
 		}
 	}
 }
