@@ -6,6 +6,7 @@ GOFILES=\
 	polygon.go\
 	coverage_table.go\
 	fillerAA.go\
+	filler.go\
 	fixed_point.go
 	
 

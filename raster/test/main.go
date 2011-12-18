@@ -11,25 +11,20 @@ import (
 	"os"
 )
 
-var (
-	draws = []Draw{
-		{	
-			"Triangle", 120, 120,
-			[]raster.Polygon{{10, 110, 110, 110, 60, 10}},
-			color.NRGBA{0, 0, 0, 0xff},
-		},
-		{
-			"Rectangle", 120, 120,
-			[]raster.Polygon{{10, 10, 110, 10, 110, 110, 10, 110}},
-			color.RGBA{0, 0, 0, 0xff},
-		},
-		{
-			"Rectangle2", 120, 120,
-			[]raster.Polygon{{0, 0, 120, 0, 120, 120, 0, 120}},
-			color.RGBA{0, 0, 0, 0xff},
-		},
-	}
-)
+type Draw struct {
+	Name          string
+	Width, Height int
+	Polygons      []raster.Polygon
+	Color         color.Color
+}
+
+func (d Draw) save() {
+	tr := [6]float64{1, 0, 0, 1, 0, 0} // identity matrix
+	r := raster.NewRasterizer8BitsSample(d.Width, d.Height)
+	img := image.NewRGBA(image.Rect(0, 0, d.Width, d.Height))
+	r.RenderEvenOdd(img, d.Color, d.Polygons, tr)
+	savepng("_test" + d.Name+".png", img)
+}
 
 func savepng(filePath string, m image.Image) {
 	f, err := os.Create(filePath)
@@ -51,20 +46,6 @@ func savepng(filePath string, m image.Image) {
 	}
 }
 
-type Draw struct {
-	Name          string
-	Width, Height int
-	Polygons      []raster.Polygon
-	Color         color.Color
-}
-
-func (d Draw) save() {
-	tr := [6]float64{1, 0, 0, 1, 0, 0} // identity matrix
-	r := raster.NewRasterizer8BitsSample(d.Width, d.Height)
-	img := image.NewRGBA(image.Rect(0, 0, d.Width, d.Height))
-	r.RenderEvenOdd(img, d.Color, d.Polygons, tr)
-	savepng("_test" + d.Name+".png", img)
-}
 
 func main() {
 	for _, d := range draws {
