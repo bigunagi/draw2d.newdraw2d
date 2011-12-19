@@ -7,6 +7,7 @@ import (
 
 type Intersection struct {
 	x float64
+	winding int8
 	next *Intersection
 }
 
@@ -19,7 +20,7 @@ func NewRasterizer() *Rasterizer {
 	return r
 }
 
-func (r *Rasterizer) Fill(img *image.Alpha, p Polygon) {
+func (r *Rasterizer) Fill(img *image.Alpha, p Polygon, nonZeroWindingRule bool) {
 	r.table = make([]*Intersection, img.Bounds().Dy())
 	var xmin, ymin, xmax, ymax float64
 	xmin = p[0]
@@ -46,7 +47,11 @@ func (r *Rasterizer) Fill(img *image.Alpha, p Polygon) {
 		r.edge(prevX, prevY, x, y)
 		prevX, prevY = x, y
 	}
-	r.scan(img, int(ymin+0.5), int(ymax+0.5))
+	if nonZeroWindingRule {
+		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))	
+	} else {
+		r.scanEvenOdd(img, int(ymin+0.5), int(ymax+0.5))	
+	}
 }
 
 func max(i, j int) int {
@@ -59,6 +64,7 @@ func max(i, j int) int {
 func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
 	var swap, dy float64
 	var iy1, iy2 int
+	var winding int8 = 1
 	if y2 < y1 {
 		swap = x1
 		x1 = x2
@@ -66,6 +72,7 @@ func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
 		swap = y1
 		y1 = y2
 		y2 = swap
+		winding = -1
 	}
 	iy1 = int(y1 + 0.5)
 	iy2 = int(y2 + 0.5)
@@ -80,14 +87,14 @@ func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
 	dx := (x2 - x1) / dy
 
 	for iy1 < iy2 {
-		r.insert(x, iy1)
+		r.insert(x, iy1, winding)
 		x += dx
 		iy1++
 	}
 }
 
-func (r *Rasterizer) insert(x float64, y int) {
-	i := &Intersection{x, nil}
+func (r *Rasterizer) insert(x float64, y int, winding int8) {
+	i := &Intersection{x, winding, nil}
 	if r.table[y] == nil {
 		r.table[y] = i
 		return
@@ -117,7 +124,7 @@ func printIntersection(i *Intersection) {
 	fmt.Println()
 }
 
-func (r *Rasterizer) scan(img *image.Alpha, ymin, ymax int) {
+func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 	var idx, ix1, ix2 int
 	var i,j *Intersection
 	fill := true
@@ -133,7 +140,6 @@ func (r *Rasterizer) scan(img *image.Alpha, ymin, ymax int) {
 					ix1 = int(i.x + 0.5)
 					ix2 = int(j.x + 0.5)
 					idx = ix2 - ix1
-			
 					if idx == 0 {
 						continue
 					}
@@ -143,6 +149,34 @@ func (r *Rasterizer) scan(img *image.Alpha, ymin, ymax int) {
 					}			
 				}
 				fill = !fill
+				i = j
+				j = i.next
+			}
+		}
+	}
+}
+
+func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
+	var ix1, ix2 int
+	var i,j *Intersection
+	pix := img.Pix[ymin*img.Stride:]
+	var winding int8 = 0
+	for y := ymin; y < ymax; y++ {
+		pix = pix[img.Stride:]
+		i = r.table[y]
+		if i != nil {
+			winding = i.winding
+			j = i.next
+			for j != nil {
+				if winding != 0 {
+					ix1 = int(i.x + 0.5)
+					ix2 = int(j.x + 0.5)
+					for ix1 < ix2 {
+						pix[ix1] = 0xff
+						ix1++
+					}
+				}
+				winding = winding + j.winding
 				i = j
 				j = i.next
 			}

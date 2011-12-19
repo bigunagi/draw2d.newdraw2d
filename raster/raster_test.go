@@ -108,9 +108,25 @@ func TestSimpleRasterizer(t *testing.T) {
 	poly := Polygon(p.points)
 	rgba := color.RGBA{0, 0, 0, 0xff}
 	r := NewRasterizer()
-	r.Fill(mask, poly)
+	r.Fill(mask, poly, false)
 	DrawSolidRGBA(img, mask, rgba)
 	savepng("_testSimpleRasterizer.png", img)
+}
+
+func TestSimpleRasterizerNonZero(t *testing.T) {
+	bounds := image.Rect(0, 0, 200, 200)
+	img := image.NewRGBA(bounds)
+	mask := image.NewAlpha(bounds)
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	rgba := color.RGBA{0, 0, 0, 0xff}
+	r := NewRasterizer()
+	r.Fill(mask, poly, true)
+	DrawSolidRGBA(img, mask, rgba)
+	savepng("_testSimpleRasterizerNonZero.png", img)
 }
 
 func TestRasterizer(t *testing.T) {
@@ -238,7 +254,25 @@ func BenchmarkSimpleRasterizer(b *testing.B) {
 		bounds := image.Rect(0, 0, 200, 200)
 		img := image.NewRGBA(bounds)
 		mask := image.NewAlpha(bounds)	
-		rasterizer.Fill(mask, poly)
+		rasterizer.Fill(mask, poly, false)
+		DrawSolidRGBA(img, mask, rgba)
+	}
+}
+
+
+func BenchmarkSimpleRasterizerNonZero(b *testing.B) {
+	var p Path
+	p.LineTo(10, 190)
+	c := curve.CubicCurveFloat64{10, 190, 10, 10, 190, 10, 190, 190}
+	c.Segment(&p, flattening_threshold)
+	poly := Polygon(p.points)
+	rgba := color.RGBA{0, 0, 0, 0xff}
+	rasterizer := NewRasterizer()
+	for i := 0; i < b.N; i++ {
+		bounds := image.Rect(0, 0, 200, 200)
+		img := image.NewRGBA(bounds)
+		mask := image.NewAlpha(bounds)	
+		rasterizer.Fill(mask, poly, true)
 		DrawSolidRGBA(img, mask, rgba)
 	}
 }
