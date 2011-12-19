@@ -6,7 +6,7 @@ import (
 )
 
 type Intersection struct {
-	x float64
+	x int
 	winding int8
 	next *Intersection
 }
@@ -41,12 +41,14 @@ func (r *Rasterizer) Fill(img *image.Alpha, p Polygon, nonZeroWindingRule bool) 
 			ymin = y
 		}
 	}
+	fmt.Println("Begin create edges")
 	prevX, prevY := p[0], p[1]
 	for i := 2; i < len(p); i += 2 {
 		x, y = p[i], p[i+1]
 		r.edge(prevX, prevY, x, y)
 		prevX, prevY = x, y
 	}
+	fmt.Println("End creating edges")
 	if nonZeroWindingRule {
 		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))	
 	} else {
@@ -61,39 +63,45 @@ func max(i, j int) int {
 	return j
 }
 
-func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
-	var swap, dy float64
-	var iy1, iy2 int
-	var winding int8 = 1
-	if y2 < y1 {
-		swap = x1
-		x1 = x2
-		x2 = swap
-		swap = y1
-		y1 = y2
-		y2 = swap
-		winding = -1
-	}
-	iy1 = int(y1 + 0.5)
-	iy2 = int(y2 + 0.5)
-	dy = y2 - y1
-
+func (r *Rasterizer) edge(xf1, yf1, xf2, yf2 float64) {
+	x1, y1, x2, y2 := int(xf1+0.5), int(yf1+0.5), int(xf2+0.5),int(yf2+0.5)
+	dx := abs(x2 - x1)
+	dy := abs(y2 - y1)
 	if dy == 0 {
-		return
+		return;
 	}
-	//idy = max(2, idy-1)
-
-	x := x1
-	dx := (x2 - x1) / dy
-
-	for iy1 < iy2 {
-		r.insert(x, iy1, winding)
-		x += dx
-		iy1++
+	var sx, sy int
+	if x1 < x2 {
+		sx = 1
+	} else {
+		sx = -1
+	}
+	if y1 < y2 {
+		sy = 1
+	} else {
+		sy = -1
+	}
+	err := dx - dy
+	r.insert(x1, y1, int8(sy))
+	var e2 int
+	for {
+		if x1 == x2 && y1 == y2 {
+			return
+		}
+		e2 = 2 * err
+		if e2 > -dy {
+			err = err - dy
+			x1 = x1 + sx
+		}
+		if e2 < dx {
+			err = err + dx
+			y1 = y1 + sy
+			r.insert(x1, y1, int8(sy))
+		}
 	}
 }
 
-func (r *Rasterizer) insert(x float64, y int, winding int8) {
+func (r *Rasterizer) insert(x int, y int, winding int8) {
 	i := &Intersection{x, winding, nil}
 	if r.table[y] == nil {
 		r.table[y] = i
@@ -137,8 +145,8 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 			j = i.next
 			for j != nil {
 				if fill {
-					ix1 = int(i.x + 0.5)
-					ix2 = int(j.x + 0.5)
+					ix1 = i.x
+					ix2 = j.x
 					idx = ix2 - ix1
 					if idx == 0 {
 						continue
@@ -169,8 +177,8 @@ func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
 			j = i.next
 			for j != nil {
 				if winding != 0 {
-					ix1 = int(i.x + 0.5)
-					ix2 = int(j.x + 0.5)
+					ix1 = i.x
+					ix2 = j.x
 					for ix1 < ix2 {
 						pix[ix1] = 0xff
 						ix1++
