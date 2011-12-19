@@ -16,7 +16,7 @@ func DrawSolidRGBA(dest *image.RGBA, mask *image.Alpha, rgba color.RGBA) {
 	pixColor := *(*uint32)(unsafe.Pointer(&rgba))
 
 	cs1 := pixColor & 0xff00ff
-	cs2 := pixColor >> 8 & 0xff00ff
+	cs2 := (pixColor >> 8) & 0xff00ff
 
 	stride1 := uint32(dest.Stride)
 	stride2 := uint32(mask.Stride)
@@ -32,16 +32,13 @@ func DrawSolidRGBA(dest *image.RGBA, mask *image.Alpha, rgba color.RGBA) {
 		for x = minX; x < maxX; x++ {
 			alpha := uint32(pixm[x])
 			p := (*uint32)(unsafe.Pointer(&pix[pixelx]))
-			if alpha == 0xff {
-				*p = pixColor
-			} else if alpha != 0 {
+			if alpha != 0 {
 				invAlpha := 0xff - alpha
-				ct1 := *p & 0xff00ff * invAlpha
-				ct2 := *p >> 8 & 0xff00ff * invAlpha
+				ct1 := (*p & 0xff00ff) * invAlpha
+				ct2 := ((*p >> 8) & 0xff00ff) * invAlpha
 
-				ct1 = (ct1 + cs1*alpha) >> 3 & 0xff00ff
-				ct2 = (ct2 + cs2*alpha) << 5 & 0xff00ff00
-
+				ct1 = ((ct1 + cs1*alpha) >> 8) & 0xff00ff
+				ct2 = (ct2 + cs2*alpha) & 0xff00ff00
 				*p = ct1 + ct2
 			}
 			pixelx += 4
