@@ -18,12 +18,21 @@ type Draw struct {
 	Color         color.Color
 }
 
-func (d Draw) save() {
+func (d Draw) saveAA() {
 	tr := [6]float64{1, 0, 0, 1, 0, 0} // identity matrix
 	r := raster.NewRasterizer8BitsSample(d.Width, d.Height)
 	img := image.NewRGBA(image.Rect(0, 0, d.Width, d.Height))
 	r.RenderEvenOdd(img, d.Color, d.Polygons, tr)
-	savepng("_test" + d.Name+".png", img)
+	savepng("_test"+d.Name+"AA.png", img)
+}
+
+func (d Draw) save() {
+	r := raster.NewRasterizer()
+	mask := image.NewAlpha(image.Rect(0, 0, d.Width, d.Height))
+	img := image.NewRGBA(image.Rect(0, 0, d.Width, d.Height))
+	r.Fill(mask, d.Polygons[0], false)
+	raster.DrawSolidRGBA(img, mask, color.RGBAModel.Convert(d.Color).(color.RGBA))
+	savepng("_test"+d.Name+".png", img)
 }
 
 func savepng(filePath string, m image.Image) {
@@ -46,9 +55,9 @@ func savepng(filePath string, m image.Image) {
 	}
 }
 
-
 func main() {
 	for _, d := range draws {
 		d.save()
+		d.saveAA()
 	}
 }

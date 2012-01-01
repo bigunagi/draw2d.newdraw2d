@@ -1,14 +1,14 @@
 package raster
 
 import (
-	"image"
 	"fmt"
+	"image"
 )
 
 type Intersection struct {
-	x int
+	x       int
 	winding int8
-	next *Intersection
+	next    *Intersection
 }
 
 type Rasterizer struct {
@@ -41,18 +41,17 @@ func (r *Rasterizer) Fill(img *image.Alpha, p Polygon, nonZeroWindingRule bool) 
 			ymin = y
 		}
 	}
-	fmt.Println("Begin create edges")
 	prevX, prevY := p[0], p[1]
 	for i := 2; i < len(p); i += 2 {
 		x, y = p[i], p[i+1]
 		r.edge(prevX, prevY, x, y)
 		prevX, prevY = x, y
 	}
-	fmt.Println("End creating edges")
+
 	if nonZeroWindingRule {
-		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))	
+		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))
 	} else {
-		r.scanEvenOdd(img, int(ymin+0.5), int(ymax+0.5))	
+		r.scanEvenOdd(img, int(ymin+0.5), int(ymax+0.5))
 	}
 }
 
@@ -64,11 +63,11 @@ func max(i, j int) int {
 }
 
 func (r *Rasterizer) edge(xf1, yf1, xf2, yf2 float64) {
-	x1, y1, x2, y2 := int(xf1+0.5), int(yf1+0.5), int(xf2+0.5),int(yf2+0.5)
+	x1, y1, x2, y2 := int(xf1+0.5), int(yf1+0.5), int(xf2+0.5), int(yf2+0.5)
 	dx := abs(x2 - x1)
 	dy := abs(y2 - y1)
 	if dy == 0 {
-		return;
+		return
 	}
 	var sx, sy int
 	if x1 < x2 {
@@ -122,19 +121,19 @@ func (r *Rasterizer) insert(x int, y int, winding int8) {
 
 func printIntersection(i *Intersection) {
 	if i == nil {
-		fmt.Print("nil")	
+		fmt.Print("nil")
 	} else {
 		for i != nil {
 			fmt.Print(i.x, " ")
-			i = i.next		
-		}	
+			i = i.next
+		}
 	}
 	fmt.Println()
 }
 
 func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 	var idx, ix1, ix2 int
-	var i,j *Intersection
+	var i, j *Intersection
 	fill := true
 	pix := img.Pix[ymin*img.Stride:]
 	for y := ymin; y < ymax; y++ {
@@ -154,7 +153,7 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 					for ix1 < ix2 {
 						pix[ix1] = 0xff
 						ix1++
-					}			
+					}
 				}
 				fill = !fill
 				i = j
@@ -166,7 +165,7 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 
 func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
 	var ix1, ix2 int
-	var i,j *Intersection
+	var i, j *Intersection
 	pix := img.Pix[ymin*img.Stride:]
 	var winding int8 = 0
 	for y := ymin; y < ymax; y++ {

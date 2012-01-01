@@ -170,12 +170,12 @@ func BenchmarkFreetype(b *testing.B) {
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
 	rgba := color.RGBA{0, 0, 0, 0xff}
-	
+
 	for i := 0; i < b.N; i++ {
 		bounds := image.Rect(0, 0, 200, 200)
 		rasterizer := raster.NewRasterizer(200, 200)
 		img := image.NewRGBA(bounds)
-		mask := image.NewAlpha(bounds)	
+		mask := image.NewAlpha(bounds)
 		rasterizer.UseNonZeroWinding = false
 		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
 		for j := 0; j < len(poly); j = j + 2 {
@@ -193,12 +193,12 @@ func BenchmarkFreetypeNonZeroWinding(b *testing.B) {
 	c.Segment(&p, flattening_threshold)
 	poly := Polygon(p.points)
 	rgba := color.RGBA{0, 0, 0, 0xff}
-	
+
 	for i := 0; i < b.N; i++ {
 		bounds := image.Rect(0, 0, 200, 200)
 		rasterizer := raster.NewRasterizer(200, 200)
 		img := image.NewRGBA(bounds)
-		mask := image.NewAlpha(bounds)	
+		mask := image.NewAlpha(bounds)
 		rasterizer.UseNonZeroWinding = true
 		rasterizer.Start(raster.Point{raster.Fix32(10 * 256), raster.Fix32(190 * 256)})
 		for j := 0; j < len(poly); j = j + 2 {
@@ -221,7 +221,7 @@ func BenchmarkRasterizerNonZeroWinding(b *testing.B) {
 	rasterizer := NewRasterizer8BitsSample(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		
+
 		rasterizer.RenderNonZeroWinding(img, color, []Polygon{poly}, tr)
 	}
 }
@@ -237,7 +237,7 @@ func BenchmarkRasterizer(b *testing.B) {
 	rasterizer := NewRasterizer8BitsSample(200, 200)
 	for i := 0; i < b.N; i++ {
 		img := image.NewRGBA(image.Rect(0, 0, 200, 200))
-		
+
 		rasterizer.RenderEvenOdd(img, color, []Polygon{poly}, tr)
 	}
 }
@@ -253,12 +253,11 @@ func BenchmarkSimpleRasterizer(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		bounds := image.Rect(0, 0, 200, 200)
 		img := image.NewRGBA(bounds)
-		mask := image.NewAlpha(bounds)	
+		mask := image.NewAlpha(bounds)
 		rasterizer.Fill(mask, poly, false)
 		DrawSolidRGBA(img, mask, rgba)
 	}
 }
-
 
 func BenchmarkSimpleRasterizerNonZero(b *testing.B) {
 	var p Path
@@ -271,7 +270,7 @@ func BenchmarkSimpleRasterizerNonZero(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		bounds := image.Rect(0, 0, 200, 200)
 		img := image.NewRGBA(bounds)
-		mask := image.NewAlpha(bounds)	
+		mask := image.NewAlpha(bounds)
 		rasterizer.Fill(mask, poly, true)
 		DrawSolidRGBA(img, mask, rgba)
 	}
