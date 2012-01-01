@@ -84,7 +84,7 @@ func (p Polygon) getEdges(startIndex, vertexCount int, edges []PolygonEdge, tr [
 		}
 		if y < bound[1] {
 			bound[1] = y
-		} 
+		}
 		if y > bound[3] {
 			bound[3] = y
 		}
