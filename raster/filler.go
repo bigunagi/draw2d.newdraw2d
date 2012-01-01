@@ -47,6 +47,7 @@ func (r *Rasterizer) Fill(img *image.Alpha, p Polygon, nonZeroWindingRule bool) 
 		r.edge(prevX, prevY, x, y)
 		prevX, prevY = x, y
 	}
+	r.edge(x, y, p[0], p[1])
 
 	if nonZeroWindingRule {
 		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))
@@ -62,61 +63,56 @@ func max(i, j int) int {
 	return j
 }
 
-func (r *Rasterizer) edge(xf1, yf1, xf2, yf2 float64) {
-	x1, y1, x2, y2 := int(xf1+0.5), int(yf1+0.5), int(xf2+0.5), int(yf2+0.5)
-	dx := abs(x2 - x1)
-	dy := abs(y2 - y1)
+func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
+	var swap, dy float64
+	var iy1, iy2 int
+	var winding int8 = 1
+	if y2 < y1 {
+		swap = x1
+		x1 = x2
+		x2 = swap
+		swap = y1
+		y1 = y2
+		y2 = swap
+		winding = -1
+	}
+	iy1 = int(y1 + 0.5)
+	iy2 = int(y2 + 0.5)
+	dy = y2 - y1
+
 	if dy == 0 {
 		return
 	}
-	var sx, sy int
-	if x1 < x2 {
-		sx = 1
-	} else {
-		sx = -1
-	}
-	if y1 < y2 {
-		sy = 1
-	} else {
-		sy = -1
-	}
-	err := dx - dy
-	r.insert(x1, y1, int8(sy))
-	var e2 int
-	for {
-		if x1 == x2 && y1 == y2 {
-			return
-		}
-		e2 = 2 * err
-		if e2 > -dy {
-			err = err - dy
-			x1 = x1 + sx
-		}
-		if e2 < dx {
-			err = err + dx
-			y1 = y1 + sy
-			r.insert(x1, y1, int8(sy))
-		}
+	//idy = max(2, idy-1)
+
+	x := x1
+	dx := (x2 - x1) / dy
+
+	for iy1 < iy2 {
+		r.insert(int(x+0.5), iy1, winding)
+		x += dx
+		iy1++
 	}
 }
 
 func (r *Rasterizer) insert(x int, y int, winding int8) {
 	i := &Intersection{x, winding, nil}
-	if r.table[y] == nil {
-		r.table[y] = i
-		return
-	}
-	var prev *Intersection
 	current := r.table[y]
-	for current != nil && x > current.x {
+	var prev *Intersection
+	for current != nil {
+		if x < current.x {
+			i.next = current
+			break
+		}
 		prev = current
 		current = current.next
 	}
-	i.next = current
 	if prev != nil {
 		prev.next = i
-		return
+	} else {
+		r.table[y] = i
 	}
+
 }
 
 func printIntersection(i *Intersection) {
@@ -132,12 +128,11 @@ func printIntersection(i *Intersection) {
 }
 
 func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
-	var idx, ix1, ix2 int
+	var ix1, ix2 int
 	var i, j *Intersection
 	fill := true
 	pix := img.Pix[ymin*img.Stride:]
-	for y := ymin; y < ymax; y++ {
-		pix = pix[img.Stride:]
+	for y := ymin; ; {
 		i = r.table[y]
 		if i != nil {
 			fill = true
@@ -146,10 +141,6 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 				if fill {
 					ix1 = i.x
 					ix2 = j.x
-					idx = ix2 - ix1
-					if idx == 0 {
-						continue
-					}
 					for ix1 < ix2 {
 						pix[ix1] = 0xff
 						ix1++
@@ -160,6 +151,12 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 				j = i.next
 			}
 		}
+		y++
+		if y < ymax {
+			pix = pix[img.Stride:]
+		} else {
+			break
+		}
 	}
 }
 
@@ -168,8 +165,7 @@ func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
 	var i, j *Intersection
 	pix := img.Pix[ymin*img.Stride:]
 	var winding int8 = 0
-	for y := ymin; y < ymax; y++ {
-		pix = pix[img.Stride:]
+	for y := ymin; ; {
 		i = r.table[y]
 		if i != nil {
 			winding = i.winding
@@ -187,6 +183,12 @@ func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
 				i = j
 				j = i.next
 			}
+		}
+		y++
+		if y < ymax {
+			pix = pix[img.Stride:]
+		} else {
+			break
 		}
 	}
 }
