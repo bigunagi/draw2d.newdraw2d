@@ -4,6 +4,7 @@ TARG=code.google.com/p/draw2d/geometry
 GOFILES=\
 	polygon.go\
 	scalar.go\
+	curve.go\
 	
 
 
