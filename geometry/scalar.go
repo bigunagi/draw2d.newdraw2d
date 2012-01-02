@@ -36,7 +36,7 @@ func (s Scalar) Abs() Scalar {
 }
 */
 /*
-// int32
+// int32 Fix floating point
 type Scalar int32
 
 const (

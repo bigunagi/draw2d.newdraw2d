@@ -1,76 +1,61 @@
 package geometry
 
-// 2 dimensional point
-type Point struct {
-	X, Y Scalar
-} 
-
-func (p1 Point) NearlyEquals(p2 Point) bool {
-	return (p1.X - p2.X).Abs() < NearlyZero && (p1.Y - p2.Y).Abs() < NearlyZero 
-}
-
-// A Line is defined by two point
-type Line struct {
-	P1, P2 Point
-}
-
 // 
-type Polyline struct {
-	vertices []Point
-}
+type Polyline []Point
 
 // This function append vertices of polyline in parameter and return the new polyline 
 // that is the concatenation of the two polylines
 func (p1 Polyline) Concat(p2 Polyline) Polyline {
-	var p Polyline
-	p.vertices = make([]Point, len(p1.vertices) + len(p2.vertices))
-	copy(p.vertices,p1.vertices)
-	copy(p.vertices[len(p1.vertices):], p2.vertices)
+	p := make(Polyline, len(p1) + len(p2), cap(p1) + cap(p2))
+	copy(p, p1)
+	copy(p[len(p1):], p2)
 	return p
 }
 
 // Return the number of lines
 func (p Polyline) GetLineCount() int {
-	return len(p.vertices) - 1
+	return len(p) - 1
 }
 
 // Return nth line of this polyline index begin at 0
-func (p Polyline) GetLine(index int) Line {
+func (p Polyline) GetLine(index int) (p1, p2 Point) {
 	i := index * 2
-	return Line{p.vertices[i], p.vertices[i+1]}
+	return p[i], p[i+1]
 }
 
 // Return the number of vertices
 // Vertices count == Line count
 func (p Polyline) GetVertexCount() int {
-	return len(p.vertices)
+	return len(p)
 }
 
 // Return nth vertex of this polyline index begin at 0
 func (p Polyline) GetVertex(index int) Point {
-	return p.vertices[index]
+	return p[index]
 }
+
 // Return vertices of polyline
 func (p Polyline) GetVertices() []Point {
-	return p.vertices
+	return p
 }
 
 
 // Close the polyline to make a polygon
 func (p Polyline) ToPolygon() Polygon {
-	polygon := Polygon{p.vertices}
-	if p.vertices[0].NearlyEquals(p.vertices[len(p.vertices) - 1]) {
+	var polygon Polygon
+	if p[0].NearlyEquals(p[len(p) - 1]) {
+		polygon := make(Polygon, len(p))
+		copy(polygon, p)
 		return polygon
 	}
-	if cap(p.vertices) < len(p.vertices) {
-		vertices := make([]Point, len(p.vertices)+2)
-		copy(vertices, p.vertices)
-		polygon.vertices = vertices
+	if cap(p) < len(p) {
+		polygon := make(Polygon, len(p)+2)
+		copy(polygon, p)
 	}
-	polygon.vertices = polygon.vertices[:len(p.vertices) + 2]
+	polygon = polygon[:len(p) + 2]
 	// close the polyline
-	polygon.vertices[len(polygon.vertices) - 2] = polygon.vertices[0]
-	polygon.vertices[len(polygon.vertices) - 1] = polygon.vertices[1]
+	polygon[len(polygon) - 2] = polygon[0]
+	polygon[len(polygon) - 1] = polygon[1]
 	return polygon
 }
 
@@ -80,5 +65,5 @@ func (p Polyline) ToPolygon() Polygon {
 type Polygon Polyline
 
 type PolylineConverter interface {
-	AsPolyline() Polyline
+	ToPolyline() Polyline
 }
