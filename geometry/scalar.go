@@ -11,7 +11,7 @@ const (
 	NearlyZero Scalar = 1e-12
 )
 
-func Scalars(floats ...Scalar) []Scalar{
+func Scalars(floats ...Scalar) []Scalar {
 	return floats
 }
 
