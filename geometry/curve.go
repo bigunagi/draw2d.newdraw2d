@@ -14,12 +14,12 @@ func (c CubicCurve) Subdivide() (c1, c2 CubicCurve) {
 	//----------------------
 	c1[0] = c[0]
 	c2[3] = c[3]
-	p := c[1].Barycenter(c[2])
-	c1[1] = c[0].Barycenter(c[1])
-	c2[2] = c[2].Barycenter(c[3])
-	c1[2] = c1[1].Barycenter(p)
-	c2[1] = c2[2].Barycenter(p)
-	c1[3] = c1[2].Barycenter(c2[1])
+	p := c[1].Center(c[2])
+	c1[1] = c[0].Center(c[1])
+	c2[2] = c[2].Center(c[3])
+	c1[2] = c1[1].Center(p)
+	c2[1] = c2[2].Center(p)
+	c1[3] = c1[2].Center(c2[1])
 	c2[0] = c1[3]
 	return
 }
@@ -54,7 +54,6 @@ func (curve CubicCurve) ToPolyline(flattening_threshold Scalar) Polyline {
 	return p
 }
 
-
 // Bezier quadratic curve defined by 1 control point
 // the first and last point defined respectivly the start and the end of the curve
 type QuadCurve [3]Point
@@ -65,9 +64,9 @@ func (c QuadCurve) Subdivide() (c1, c2 QuadCurve) {
 	//----------------------
 	c1[0] = c[0]
 	c2[2] = c[2]
-	c1[1] = c[0].Barycenter(c[1])
-	c2[1] = c[1].Barycenter(c[2])
-	c1[2] = c1[1].Barycenter(c2[1])
+	c1[1] = c[0].Center(c[1])
+	c2[1] = c[1].Center(c[2])
+	c1[2] = c1[1].Center(c2[1])
 	c2[0] = c1[2]
 	return
 }
@@ -81,14 +80,14 @@ func (curve QuadCurve) ToPolyline(flattening_threshold Scalar) Polyline {
 	// current curve
 	var c QuadCurve
 	var dx, dy, d Scalar
-	p := make(Polyline, 32, 0)
-	
+	p := make(Polyline, CurveRecursionLimit, 0)
+
 	for i >= 0 {
 		c = curves[i]
 		dx = c[2].X - c[0].X
 		dy = c[2].Y - c[0].Y
 
-		d = (((c[1].X-c[2].X)*dy - (c[1].Y-c[2].Y)*dx)).Abs()
+		d = ((c[1].X-c[2].X)*dy - (c[1].Y-c[2].Y)*dx).Abs()
 
 		if (d*d) < flattening_threshold*(dx*dx+dy*dy) || i == len(curves)-1 {
 			p = append(p, c[2])

@@ -6,7 +6,7 @@ type Polyline []Point
 // This function append vertices of polyline in parameter and return the new polyline 
 // that is the concatenation of the two polylines
 func (p1 Polyline) Concat(p2 Polyline) Polyline {
-	p := make(Polyline, len(p1) + len(p2), cap(p1) + cap(p2))
+	p := make(Polyline, len(p1)+len(p2), cap(p1)+cap(p2))
 	copy(p, p1)
 	copy(p[len(p1):], p2)
 	return p
@@ -39,11 +39,10 @@ func (p Polyline) GetVertices() []Point {
 	return p
 }
 
-
 // Close the polyline to make a polygon
 func (p Polyline) ToPolygon() Polygon {
 	var polygon Polygon
-	if p[0].NearlyEquals(p[len(p) - 1]) {
+	if p[0].NearlyEquals(p[len(p)-1]) {
 		polygon := make(Polygon, len(p))
 		copy(polygon, p)
 		return polygon
@@ -52,10 +51,10 @@ func (p Polyline) ToPolygon() Polygon {
 		polygon := make(Polygon, len(p)+2)
 		copy(polygon, p)
 	}
-	polygon = polygon[:len(p) + 2]
+	polygon = polygon[:len(p)+2]
 	// close the polyline
-	polygon[len(polygon) - 2] = polygon[0]
-	polygon[len(polygon) - 1] = polygon[1]
+	polygon[len(polygon)-2] = polygon[0]
+	polygon[len(polygon)-1] = polygon[1]
 	return polygon
 }
 
