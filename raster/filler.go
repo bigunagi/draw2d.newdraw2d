@@ -3,10 +3,13 @@ package raster
 import (
 	"fmt"
 	"image"
+	"math"
 )
 
 type Intersection struct {
 	x       int
+	cover   uint8
+	step    uint8
 	winding int8
 	next    *Intersection
 }
@@ -50,9 +53,9 @@ func (r *Rasterizer) Fill(img *image.Alpha, p Polygon, nonZeroWindingRule bool) 
 	r.edge(x, y, p[0], p[1])
 
 	if nonZeroWindingRule {
-		r.scanNonZero(img, int(ymin+0.5), int(ymax+0.5))
+		r.scanNonZero(img, int(ymin), int(ymax+0.5))
 	} else {
-		r.scanEvenOdd(img, int(ymin+0.5), int(ymax+0.5))
+		r.scanEvenOdd(img, int(ymin), int(ymax+0.5))
 	}
 }
 
@@ -65,7 +68,6 @@ func max(i, j int) int {
 
 func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
 	var swap, dy float64
-	var iy1, iy2 int
 	var winding int8 = 1
 	if y2 < y1 {
 		swap = x1
@@ -76,27 +78,32 @@ func (r *Rasterizer) edge(x1, y1, x2, y2 float64) {
 		y2 = swap
 		winding = -1
 	}
-	iy1 = int(y1 + 0.5)
-	iy2 = int(y2 + 0.5)
 	dy = y2 - y1
 
+	x := x1
+	y := y1
+
+	var cover uint8
 	if dy == 0 {
+		cover = uint8(math.Abs(x-float64(int(x))) * 256)
+		r.insert(int(x), int(y), cover, 0, winding)
 		return
 	}
-	//idy = max(2, idy-1)
 
-	x := x1
 	dx := (x2 - x1) / dy
-
-	for iy1 < iy2 {
-		r.insert(int(x+0.5), iy1, winding)
+	yend := float64(int(y2-1) + 1)
+	step := uint8(math.Abs(dx))
+	for y < yend {
+		cover = uint8(math.Abs(x-float64(int(x))) * 256)
+		r.insert(int(x), int(y), cover, step, winding)
 		x += dx
-		iy1++
+		y += 1
 	}
+
 }
 
-func (r *Rasterizer) insert(x int, y int, winding int8) {
-	i := &Intersection{x, winding, nil}
+func (r *Rasterizer) insert(x int, y int, cover, step uint8, winding int8) {
+	i := &Intersection{x, cover, step, winding, nil}
 	current := r.table[y]
 	var prev *Intersection
 	for current != nil {
@@ -141,10 +148,19 @@ func (r *Rasterizer) scanEvenOdd(img *image.Alpha, ymin, ymax int) {
 				if fill {
 					ix1 = i.x
 					ix2 = j.x
-					for ix1 < ix2 {
-						pix[ix1] = 0xff
+					if ix1 != ix2 {
+						alpha := 0xff - i.cover
+						pix[ix1] = alpha
 						ix1++
+						for ix1 < ix2 {
+							pix[ix1] = 0xff
+							ix1++
+						}
+						pix[ix2] = j.cover
+					} else {
+						pix[ix1] = 0xff >> 3
 					}
+
 				}
 				fill = !fill
 				i = j
@@ -174,9 +190,16 @@ func (r *Rasterizer) scanNonZero(img *image.Alpha, ymin, ymax int) {
 				if winding != 0 {
 					ix1 = i.x
 					ix2 = j.x
-					for ix1 < ix2 {
-						pix[ix1] = 0xff
+					if ix1 != ix2 {
+						pix[ix1] = 0xff - i.cover
 						ix1++
+						for ix1 < ix2 {
+							pix[ix1] = 0xff
+							ix1++
+						}
+						pix[ix2] = j.cover
+					} else {
+						pix[ix1] = 0xff >> 3
 					}
 				}
 				winding = winding + j.winding
