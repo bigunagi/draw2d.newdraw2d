@@ -1,9 +1,11 @@
 gotest -test.bench=. -test.run="Do not run tests"
-rm -f _test/draw2d.googlecode.com/hg/draw2d/raster.a
-rm -f _test/draw2d.googlecode.com/hg/draw2d/raster.a
-gopack grc _test/draw2d.googlecode.com/hg/draw2d/raster.a _gotest_.8 
+rm -f _test/code.google.com/p/draw2d/raster.a
+rm -f _test/code.google.com/p/draw2d/raster.a
+gopack grc _test/code.google.com/p/draw2d/raster.a _gotest_.8 
 PASS
-raster.BenchmarkFreetype	    1000	   1650165 ns/op
-raster.BenchmarkFreetypeNonZeroWinding	    2000	   1238123 ns/op
-raster.BenchmarkRasterizerNonZeroWinding	    5000	    577457 ns/op
-raster.BenchmarkRasterizer	    5000	    447244 ns/op
+raster.BenchmarkFreetype	    5000	    449244 ns/op
+raster.BenchmarkFreetypeNonZeroWinding	    5000	    371437 ns/op
+raster.BenchmarkRasterizerNonZeroWinding	    5000	    422242 ns/op
+raster.BenchmarkRasterizer	   10000	    311531 ns/op
+raster.BenchmarkSimpleRasterizer	    5000	    297029 ns/op
+raster.BenchmarkSimpleRasterizerNonZero	    5000	    292229 ns/op

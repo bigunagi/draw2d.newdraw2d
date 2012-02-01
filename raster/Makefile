@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=code.google.com/p/draw2d/raster
+TARG=code.google.com/p/draw2d.newdraw2d/raster
 GOFILES=\
 	line.go\
 	polygon.go\
