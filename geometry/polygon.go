@@ -1,7 +1,7 @@
 package geometry
 
 // 
-type Polyline []Point
+type Polyline []Vector
 
 // This function append vertices of polyline in parameter and return the new polyline 
 // that is the concatenation of the two polylines
@@ -18,7 +18,7 @@ func (p Polyline) GetLineCount() int {
 }
 
 // Return nth line of this polyline index begin at 0
-func (p Polyline) GetLine(index int) (p1, p2 Point) {
+func (p Polyline) GetLine(index int) (p1, p2 Vector) {
 	i := index * 2
 	return p[i], p[i+1]
 }
@@ -30,12 +30,12 @@ func (p Polyline) GetVertexCount() int {
 }
 
 // Return nth vertex of this polyline index begin at 0
-func (p Polyline) GetVertex(index int) Point {
+func (p Polyline) GetVertex(index int) Vector {
 	return p[index]
 }
 
 // Return vertices of polyline
-func (p Polyline) GetVertices() []Point {
+func (p Polyline) GetVertices() []Vector {
 	return p
 }
 
@@ -59,7 +59,7 @@ func (p Polyline) ToPolygon() Polygon {
 }
 
 // A polygon is a closed path composed by straigth line segments called edges. 
-// Edges are joined by vertices (Point).
+// Edges are joined by vertices (Vector).
 // this is a 2 dimensional polygon 
 type Polygon Polyline
 

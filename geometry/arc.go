@@ -1,10 +1,11 @@
+package geometry
 
-
+/*
 const (
-	ELLIPSE_MAGIC_NUMBER = Scalar(0.551784)
+	ELLIPSE_MAGIC_NUMBER = 0.551784
 )
 
-func (path Path) Ellipse(x Point, width, height Scalar) {
+func (path Path) Ellipse(x Point, width, height float64) {
 	float im = 1 - ELLIPSE_MAGIC_NUMBER;
 	float rw = width / 2;
 	float rh = height / 2;
@@ -76,7 +77,7 @@ func (path Path) arcTo(float x1, float y1, float x2, float y2, float radius) {
 	float xq2 = x1 + xv2 * delta;
 	float yq2 = y1 + yv2 * delta;
 	// end maths.
-	
+
 	// now we can draw:
 	float magic = 0.55228475f; // see http://www.tinaja.com/glib/ellipse4.pdf
 	float dd = delta * (1 - magic);
@@ -85,3 +86,4 @@ func (path Path) arcTo(float x1, float y1, float x2, float y2, float radius) {
 	x0 = xq2;
 	y0 = yq2;
 }
+*/

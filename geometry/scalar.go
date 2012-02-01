@@ -1,53 +1,21 @@
 package geometry
 
-import (
-	"math"
-)
-
-// float64
-type Scalar float64
-
 const (
-	NearlyZero Scalar = 1e-12
+	NearlyZero float64 = 1e-12
 )
 
-func Scalars(floats ...Scalar) []Scalar {
-	return floats
+// Clamp f to be between min and max
+func Clamp(s, min, max float64) float64 {
+	if s < min {
+		return min
+	}
+	if s > max {
+		return max
+	}
+	return s
 }
 
-func (s Scalar) Abs() Scalar {
-	return Scalar(math.Abs(float64(s)))
+// Linearly interpolate between a and b by t percent (comprise from 0 to 1).
+func Lerp(a, b, t float64) float64 {
+	return a*(1.0-t) + b*t
 }
-
-/*
-// float32
-type Scalar float32
-
-const (
-	Epsilon Scalar = 1e-12
-)
-
-func Scalars(floats ...Scalar) []Scalar{
-	return floats
-}
-
-func (s Scalar) Abs() Scalar {
-	return Scalar(math.Abs(float64(s)))
-}
-*/
-/*
-// int32 Fix floating point
-type Scalar int32
-
-const (
-	NearlyZero Scalar = 1e-12
-)
-
-func Scalars(floats ...Scalar) []Scalar{
-	return floats
-}
-
-func (s Scalar) Abs() Scalar {
-	return Scalar(math.Abs(float64(s)))
-}
-*/
