@@ -37,7 +37,6 @@ func (curve CubicCurve) ToPolyline(flatteningThreshold float64) Polyline {
 	i := 0
 	// current curve
 	var c CubicCurve
-	var dx, dy, d2, d3 float64
 	p := make(Polyline, 32, 0)
 	for i >= 0 {
 		c = curves[i]
