@@ -3,7 +3,7 @@ package main
 
 import (
 	"bufio"
-	"code.google.com/p/draw2d/raster"
+	"code.google.com/p/draw2d.newdraw2d/raster"
 	"image"
 	"image/color"
 	"image/png"

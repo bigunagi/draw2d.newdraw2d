@@ -295,6 +295,7 @@ type VertexData struct {
 	ClipFlags int
 	Line      int
 }
+
 //! Calculates the edges of the polygon with transformation and clipping to edges array.
 /*! Note that this may return upto three times the amount of edges that the polygon has vertices,
  *  in the unlucky case where both left and right side get clipped for all edges.

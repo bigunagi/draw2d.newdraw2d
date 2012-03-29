@@ -204,6 +204,7 @@ func (gc *GraphicContext) Fill(paths ...*draw2d.PathStorage) {
 	gc.paint(gc.fillRasterizer, gc.Current.FillColor)
 	gc.Current.Path.Clear()
 }
+
 /*
 func (gc *GraphicContext) Fill(paths ...*draw2d.PathStorage) {
 	paths = append(paths, gc.Current.Path)

@@ -245,6 +245,7 @@ func show(interpreter *Interpreter) {
 	interpreter.GetGraphicContext().FillString(s)
 	log.Printf("show not really implemented")
 }
+
 //ax  ay  string ashow – -> Add (ax , ay) to width of each glyph while showing string
 func ashow(interpreter *Interpreter) {
 	log.Printf("ashow not really implemented")

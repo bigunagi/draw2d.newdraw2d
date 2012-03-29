@@ -5,6 +5,7 @@ package curve
 import (
 	"math"
 )
+
 //X1, Y1, X2, Y2, X3, Y3 float64
 type QuadCurveFloat64 [6]float64
 

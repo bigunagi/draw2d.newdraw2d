@@ -42,6 +42,7 @@ func getColorBilinear(img image.Image, x, y float64) color.Color {
 	a := int(lerp(lerp(a0, a1, dx), lerp(a3, a2, dx), dy))
 	return color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), uint8(a >> 8)}
 }
+
 /**
 -- LERP
 -- /lerp/, vi.,n.

@@ -27,6 +27,7 @@ func DrawPolyline(img *image.Alpha, s ...float64) {
 		y1 = y2
 	}
 }
+
 // Uses Bresenham
 func DrawLine(img *image.Alpha, x0, y0, x1, y1 int) {
 	//fmt.Printf("Draw line: (%d, %d) (%d, %d)\n", x0, y0, x1, y1)
