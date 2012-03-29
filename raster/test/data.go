@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "code.google.com/p/draw2d/raster"
+	. "code.google.com/p/draw2d.newdraw2d/raster"
 	"image/color"
 )
 

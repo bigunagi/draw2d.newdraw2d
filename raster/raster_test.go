@@ -141,7 +141,6 @@ func TestRasterizer(t *testing.T) {
 	r := NewRasterizer8BitsSample(200, 200)
 	//PolylineBresenham(img, image.Black, poly...)
 
-
 	r.RenderEvenOdd(img, color, []Polygon{poly}, tr)
 	savepng("_testRasterizer.png", img)
 }
@@ -157,7 +156,6 @@ func TestRasterizerNonZeroWinding(t *testing.T) {
 	tr := [6]float64{1, 0, 0, 1, 0, 0}
 	r := NewRasterizer8BitsSample(200, 200)
 	//PolylineBresenham(img, image.Black, poly...)
-
 
 	r.RenderNonZeroWinding(img, color, []Polygon{poly}, tr)
 	savepng("_testRasterizerNonZeroWinding.png", img)

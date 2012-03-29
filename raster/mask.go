@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"unsafe"
 )
+
 // Renders the mask to the canvas
 func DrawSolidRGBA(dest *image.RGBA, mask *image.Alpha, rgba color.RGBA) {
 	rect := dest.Bounds().Intersect(mask.Bounds())

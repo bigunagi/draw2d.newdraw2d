@@ -24,7 +24,7 @@ func SegmentArc(t LineTracer, x, y, rx, ry, start, angle, scale float64) {
 		if (angle < end-da/4) != clockWise {
 			curX = x + math.Cos(end)*rx
 			curY = y + math.Sin(end)*ry
-			return 
+			return
 		}
 		curX = x + math.Cos(angle)*rx
 		curY = y + math.Sin(angle)*ry

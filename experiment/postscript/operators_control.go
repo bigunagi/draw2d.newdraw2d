@@ -6,6 +6,7 @@ package postscript
 import (
 	"log"
 )
+
 // any exec – Execute arbitrary object
 func exec(interpreter *Interpreter) {
 	value := interpreter.Pop()
